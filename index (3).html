@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BNI Kutch - Laksh Maheshwari Event Booking</title>
+  <style>
+    :root {
+      --bni-red: #E31837;
+      --bni-navy: #002244;
+      --bni-gold: #C5A059;
+      --bni-platinum: #E0E0E0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      color: #333;
+      padding-bottom: 100px;
+    }
+    header {
+      background: linear-gradient(90deg, var(--bni-navy) 0%, var(--bni-red) 100%);
+      color: white;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-img {
+      width: 54px;
+      height: 54px;
+      object-fit: contain;
+      background: white;
+      border-radius: 8px;
+      padding: 3px;
+      flex-shrink: 0;
+    }
+    .brand-text {
+      font-weight: 800;
+      font-size: 1.25rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      line-height: 1.2;
+    }
+    .brand-text small {
+      display: block;
+      font-size: 0.65rem;
+      opacity: 0.9;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .event-meta {
+      text-align: right;
+    }
+    .event-meta h1 { font-size: 1.15rem; margin-bottom: 2px; }
+    .event-meta p { font-size: 0.82rem; opacity: 0.9; }
+    .container {
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 20px 15px;
+    }
+    /* cap notice */
+    .cap-notice {
+      background: #fff8e1;
+      border: 1.5px solid #f9a825;
+      border-radius: 10px;
+      padding: 12px 18px;
+      margin-bottom: 16px;
+      font-size: 0.88rem;
+      color: #5d4037;
+      font-weight: 600;
+      text-align: center;
+    }
+    .legend {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 20px;
+      background: white;
+      padding: 14px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #555;
+    }
+    .legend-box {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 1px solid #bbb;
+    }
+    .seat-map-wrapper {
+      background: white;
+      border-radius: 14px;
+      padding: 30px 20px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+      margin-bottom: 25px;
+      overflow-x: auto;
+    }
+    .section-title {
+      text-align: center;
+      font-size: 1.15rem;
+      color: var(--bni-navy);
+      margin: 30px 0 18px;
+      font-weight: 800;
+      text-transform: uppercase;
+      border-bottom: 3px solid var(--bni-red);
+      padding-bottom: 8px;
+      display: block;
+    }
+    .stage {
+      background: var(--bni-navy);
+      color: white;
+      text-align: center;
+      padding: 20px 50px;
+      font-weight: 900;
+      font-size: 1.4rem;
+      border-radius: 6px;
+      max-width: 420px;
+      margin: 0 auto 30px;
+      letter-spacing: 4px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    /* ── SOFA ── */
+    .sofa-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .sofa-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 30px;
+    }
+    .row-label {
+      font-size: 0.72rem;
+      color: #777;
+      font-weight: 700;
+      text-align: center;
+      min-width: 40px;
+    }
+    .seat-block { display: flex; gap: 4px; }
+    /* ── SEATS ── */
+    .seat {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+      font-size: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #bbb;
+      background: #fff;
+      user-select: none;
+      color: #555;
+      font-weight: 600;
+    }
+    .seat:hover:not(.booked):not(.pending) {
+      transform: scale(1.18);
+      z-index: 5;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+    .seat.platinum {
+      border-color: #A0A0A0;
+      background: linear-gradient(135deg, #ffffff, #f0f0f0);
+    }
+    .seat.gold {
+      border-color: #D4AF37;
+      background: linear-gradient(135deg, #FFFDE7, #FFECB3);
+    }
+    .seat.selected {
+      background: var(--bni-red) !important;
+      color: white !important;
+      border-color: #b0001b !important;
+      box-shadow: 0 0 10px rgba(227,24,55,0.45);
+      font-weight: 700;
+    }
+    .seat.booked {
+      background: #d0d0d0 !important;
+      cursor: not-allowed !important;
+      color: #999 !important;
+      border-color: #bbb !important;
+      text-decoration: line-through;
+    }
+    .seat.pending {
+      background: #FF9800 !important;
+      cursor: not-allowed !important;
+      color: white !important;
+      border-color: #F57C00 !important;
+    }
+    .seat.chair-ground {
+      background: #E3F2FD;
+      border-color: #90CAF9;
+    }
+    .seat.chair-balcony {
+      background: #F3E5F5;
+      border-color: #CE93D8;
+    }
+    /* ── CHAIR ROWS ── */
+    .chair-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      align-items: center;
+    }
+    .chair-row {
+      display: flex;
+      justify-content: center;
+      gap: 2px;
+      align-items: center;
+      /* row gap managed per-row via margin */
+    }
+    .chair-row .seat {
+      width: 24px;
+      height: 24px;
+      font-size: 7px;
+    }
+    /* gap row = spacer */
+    .row-gap { height: 10px; }
+    .aisle { width: 20px; flex-shrink: 0; }
+    /* ── BOOKING PANEL ── */
+    .booking-panel {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      border-top: 3px solid var(--bni-red);
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.12);
+      z-index: 100;
+    }
+    .panel-info { flex: 1; min-width: 200px; }
+    .panel-info small { font-weight: 700; color: #777; font-size: 0.8rem; text-transform: uppercase; }
+    .selected-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; max-height: 60px; overflow-y: auto; }
+    .tag { background: var(--bni-navy); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
+    .panel-action { display: flex; align-items: center; gap: 14px; }
+    .total { font-size: 1.4rem; font-weight: 900; color: var(--bni-navy); }
+    .btn { padding: 10px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 0.95rem; transition: 0.2s; }
+    .btn-primary { background: var(--bni-red); color: white; }
+    .btn-primary:hover:not(:disabled) { background: #b80022; transform: translateY(-1px); }
+    .btn:disabled { background: #ccc; cursor: not-allowed; }
+    .btn-outline { background: transparent; border: 2px solid var(--bni-navy); color: var(--bni-navy); }
+    .btn-outline:hover { background: var(--bni-navy); color: white; }
+    /* ── PAYMENT ── */
+    #paymentSection {
+      display: none;
+      background: white;
+      border-radius: 14px;
+      padding: 28px;
+      margin-bottom: 100px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .payment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 18px; }
+    .payment-box { background: #f9fafc; padding: 22px; border-radius: 10px; border: 1px solid #e8eaf0; }
+    .qr-box {
+      width: 170px; height: 170px;
+      background: white;
+      border: 2px dashed var(--bni-navy);
+      display: flex; align-items: center; justify-content: center;
+      margin: 12px auto; border-radius: 8px;
+      color: var(--bni-navy); font-weight: 700; text-align: center; font-size: 0.85rem;
+    }
+    .upload-wrap {
+      border: 2px dashed #ccc; padding: 28px; text-align: center;
+      border-radius: 10px; margin-top: 14px; cursor: pointer; transition: 0.2s; background: #fafafa;
+    }
+    .upload-wrap:hover { border-color: var(--bni-red); background: #fff5f7; }
+    input[type="text"], input[type="email"], input[type="tel"] {
+      width: 100%; padding: 11px; margin: 8px 0 16px;
+      border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem;
+    }
+    label { font-weight: 700; font-size: 0.88rem; color: #444; }
+    .form-note { font-size: 0.8rem; color: #888; margin-top: 6px; }
+    /* GST line */
+    .gst-row { background: #fff8e1; }
+    @media(max-width: 768px) {
+      .payment-grid { grid-template-columns: 1fr; }
+      .sofa-row { gap: 16px; }
+      .seat { width: 24px; height: 24px; }
+      .chair-row .seat { width: 20px; height: 20px; }
+      .booking-panel { padding: 10px 12px; }
+      .total { font-size: 1.15rem; }
+      .stage { font-size: 1.1rem; padding: 16px 30px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img class="logo-img" src="data:image/jpeg;base64,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" alt="BNI Kutch Logo">
+      <div class="brand-text">
+        BNI Kutch
+        <small>Changing the Way the World Does Business</small>
+      </div>
+    </div>
+    <div class="event-meta">
+      <h1>Laksh Maheshwari Live</h1>
+      <p>Exclusive Event | BNI Kutch Chapter</p>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="cap-notice">
+      🎟️ <strong>Booking Limit:</strong> Each member can book <strong>max 1 Sofa seat</strong> &amp; <strong>max 2 Chair seats</strong> per unique email/phone. Duplicate bookings will be rejected.
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-box" style="background:linear-gradient(135deg,#ffffff,#f0f0f0);border-color:#A0A0A0;"></div> Sofa Platinum (₹9,000)</div>
+      <div class="legend-item"><div class="legend-box" style="background:linear-gradient(135deg,#FFFDE7,#FFECB3);border-color:#D4AF37;"></div> Sofa Gold (₹6,000)</div>
+      <div class="legend-item"><div class="legend-box" style="background:#E3F2FD;border-color:#90CAF9;"></div> Ground Chair (₹999)</div>
+      <div class="legend-item"><div class="legend-box" style="background:#F3E5F5;border-color:#CE93D8;"></div> Balcony Chair (₹699)</div>
+      <div class="legend-item"><div class="legend-box" style="background:#E31837;border-color:#b0001b;"></div> Selected</div>
+      <div class="legend-item"><div class="legend-box" style="background:#FF9800;border-color:#F57C00;"></div> Pending</div>
+      <div class="legend-item"><div class="legend-box" style="background:#d0d0d0;border-color:#bbb;"></div> Booked</div>
+    </div>
+
+    <div class="seat-map-wrapper">
+      <div class="stage">S T A G E</div>
+
+      <div class="section-title">Sofa Seating — Ground Floor</div>
+      <div class="sofa-rows" id="sofaSection"></div>
+
+      <div class="section-title">Chair Seating — Ground Floor</div>
+      <div class="chair-section" id="groundSection"></div>
+
+      <div class="section-title">Balcony — First Floor</div>
+      <div class="chair-section" id="balconySection"></div>
+    </div>
+
+    <div id="paymentSection">
+      <h2 style="color:var(--bni-navy);margin-bottom:6px;">Payment &amp; Confirmation</h2>
+      <p style="color:#666;font-size:0.9rem;margin-bottom:18px;">Review your selection, complete payment, and upload screenshot for admin verification. <strong>18% GST is included in the total.</strong></p>
+      <div id="orderSummary"></div>
+
+      <div class="payment-grid">
+        <div class="payment-box">
+          <h3 style="color:var(--bni-red);margin-bottom:10px;font-size:1.05rem;">UPI Payment</h3>
+          <div class="qr-box">
+            <div>
+              <svg viewBox="0 0 100 100" width="70" height="70" style="margin-bottom:6px;">
+                <rect fill="#002244" x="0" y="0" width="100" height="100"/>
+                <rect fill="white" x="10" y="10" width="25" height="25"/>
+                <rect fill="white" x="65" y="10" width="25" height="25"/>
+                <rect fill="white" x="10" y="65" width="25" height="25"/>
+                <path fill="none" stroke="white" stroke-width="2" d="M45 10 v25 h25 v-25 z M10 45 v25 h25 v-25 z M45 45 v10 h10 v-10 z M65 45 v25 h25 v-25 z M45 65 v25 h25 v-25 z"/>
+              </svg><br>
+              Scan to Pay
+            </div>
+          </div>
+          <p style="text-align:center;font-weight:800;color:var(--bni-navy);font-size:1.05rem;">munjalshah9@okicici</p>
+          <p style="text-align:center;font-size:0.82rem;color:#777;">GPay · PhonePe · Paytm · Any UPI App</p>
+        </div>
+        <div class="payment-box">
+          <h3 style="color:var(--bni-red);margin-bottom:10px;font-size:1.05rem;">Bank Transfer</h3>
+          <p style="font-size:0.9rem;line-height:1.9;color:#444;">
+            <strong>Account Name:</strong> Imperial Innoventures<br>
+            <strong>Account Number:</strong> 0114137470<br>
+            <strong>Bank:</strong> Kotak Mahindra Bank<br>
+            <strong>Branch:</strong> Gandhidham Branch<br>
+            <strong>IFSC Code:</strong> KKBK0000822
+          </p>
+        </div>
+      </div>
+
+      <div style="margin-top:22px;text-align:center;">
+        <label style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-weight:700;color:#444;">
+          <input type="checkbox" id="paidCheckbox" style="width:18px;height:18px;cursor:pointer;">
+          I have completed the payment
+        </label>
+      </div>
+
+      <div id="uploadForm" style="display:none;margin-top:28px;max-width:620px;margin-left:auto;margin-right:auto;border-top:2px solid #eee;padding-top:22px;">
+        <h3 style="color:var(--bni-navy);margin-bottom:14px;">Upload Payment Proof &amp; Details</h3>
+        <label>Full Name</label>
+        <input type="text" id="custName" placeholder="Enter your full name">
+        <label>Email Address</label>
+        <input type="email" id="custEmail" placeholder="Enter your email address">
+        <label>Phone Number</label>
+        <input type="tel" id="custPhone" placeholder="Enter your phone number">
+        <label>Payment Screenshot</label>
+        <div class="upload-wrap" onclick="document.getElementById('fileInput').click()">
+          <p id="fileLabel" style="font-weight:600;color:#666;">Click here to upload screenshot</p>
+          <p class="form-note">PNG, JPG or JPEG (max 2MB)</p>
+          <input type="file" id="fileInput" accept="image/png,image/jpeg,image/jpg" style="display:none;">
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:18px;padding:12px;" onclick="submitBooking()">Complete Booking</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="booking-panel" id="bookingPanel">
+    <div class="panel-info">
+      <small>Selected Seats (<span id="count">0</span>)</small>
+      <div class="selected-tags" id="selectedList"></div>
+    </div>
+    <div class="panel-action">
+      <button class="btn btn-outline" onclick="clearSelection()">Clear</button>
+      <div>
+        <div class="total" id="totalAmount">₹0</div>
+        <div style="font-size:0.72rem;color:#888;text-align:right;">incl. 18% GST</div>
+      </div>
+      <button class="btn btn-primary" id="proceedBtn" onclick="proceedToPayment()" disabled>Proceed to Pay</button>
+    </div>
+  </div>
+
+  <script>
+    /* ================================================================
+       SEAT MAP DATA — matches seating chart image
+       ================================================================ */
+
+    /* SOFA */
+    const sofaRows = [
+      { id:'S1', label:'Row 1', left:5,  right:5,  price:9000, cat:'platinum' },
+      { id:'S2', label:'Row 2', left:5,  right:5,  price:9000, cat:'platinum' },
+      { id:'S3', label:'Row 3', left:7,  right:7,  price:9000, cat:'platinum' },
+      { id:'S4', label:'Row 4', left:7,  right:7,  price:9000, cat:'platinum' },
+      { id:'S5', label:'Row 5', left:7,  right:7,  price:6000, cat:'gold' },
+      { id:'S6', label:'Row 6', left:7,  right:7,  price:6000, cat:'gold' },
+      { id:'S7', label:'Row 7', left:5,  right:5,  price:6000, cat:'gold' },
+      { id:'S8', label:'Row 8', left:5,  right:5,  price:6000, cat:'gold' },
+    ];
+
+    /*  Ground floor — rows A-L (matching image).
+        Each entry: { id, leftSeats, rightSeats, leftStart, rightStart, aisleGap }
+        We store full row data; blanks = empty cells before first seat.
+        Format per image:
+          Row 1 (A): 1-23 left of aisle, 24-46 right → actually image shows rows A-J + K + L
+        Simplified as per image reading:
+    */
+    const groundRows = [
+      { id:'A',  left:23, right:23, price:999, cat:'chair-ground', offsetLeft:0,  offsetRight:0  },
+      { id:'B',  left:23, right:23, price:999, cat:'chair-ground', offsetLeft:0,  offsetRight:0  },
+      { id:'C',  left:23, right:23, price:999, cat:'chair-ground', offsetLeft:0,  offsetRight:0  },
+      { id:'D',  left:22, right:22, price:999, cat:'chair-ground', offsetLeft:1,  offsetRight:0  },
+      { id:'E',  left:22, right:22, price:999, cat:'chair-ground', offsetLeft:1,  offsetRight:0  },
+      { id:'F',  left:22, right:20, price:999, cat:'chair-ground', offsetLeft:1,  offsetRight:0  },
+      { id:'G',  left:13, right:13, price:999, cat:'chair-ground', offsetLeft:8,  offsetRight:0  },
+      { id:'H',  left:11, right:11, price:999, cat:'chair-ground', offsetLeft:10, offsetRight:0  },
+      { id:'I',  left:9,  right:9,  price:999, cat:'chair-ground', offsetLeft:12, offsetRight:0  },
+      { id:'J',  left:7,  right:7,  price:999, cat:'chair-ground', offsetLeft:14, offsetRight:0  },
+      { id:'K',  left:6,  right:6,  price:999, cat:'chair-ground', offsetLeft:15, offsetRight:0  },
+      { id:'L',  left:0,  right:0,  price:999, cat:'chair-ground', offsetLeft:0,  offsetRight:0  },
+    ];
+
+    /* Balcony rows — 5 rows matching image, split at aisle */
+    const balconyRows = [
+      { id:'F1', label:'Row 1', left:15, right:15, price:699, cat:'chair-balcony' },
+      { id:'F2', label:'Row 2', left:14, right:14, price:699, cat:'chair-balcony' },
+      { id:'F3', label:'Row 3', left:13, right:13, price:699, cat:'chair-balcony' },
+      { id:'F4', label:'Row 4', left:9,  right:9,  price:699, cat:'chair-balcony' },
+      { id:'F5', label:'Row 5', left:9,  right:9,  price:699, cat:'chair-balcony' },
+      { id:'F6', label:'Row 6', left:8,  right:8,  price:699, cat:'chair-balcony' },
+    ];
+
+    let seatStatus = JSON.parse(localStorage.getItem('seatStatus') || '{}');
+    let selectedSeats = new Set();
+    const GST_RATE = 0.18;
+
+    /* ================================================================
+       SEAT CREATION
+       ================================================================ */
+    function createSeat(id, label, cat, price) {
+      const el = document.createElement('div');
+      el.className = `seat ${cat}`;
+      el.dataset.id    = id;
+      el.dataset.price = price;
+      el.title = `${id} — ₹${price.toLocaleString('en-IN')} + 18% GST`;
+      el.textContent = label;
+      const st = seatStatus[id] || 'available';
+      if (st !== 'available') el.classList.add(st);
+      el.onclick = () => toggleSeat(id, el, cat);
+      return el;
+    }
+
+    /* ================================================================
+       RENDER SOFA
+       ================================================================ */
+    function renderSofa() {
+      const container = document.getElementById('sofaSection');
+      sofaRows.forEach(row => {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'sofa-row';
+
+        const left = document.createElement('div');
+        left.className = 'seat-block';
+        for (let i = 1; i <= row.left; i++)
+          left.appendChild(createSeat(`${row.id}-L-${i}`, i, row.cat, row.price));
+
+        const lbl = document.createElement('div');
+        lbl.className = 'row-label';
+        lbl.textContent = row.label;
+
+        const right = document.createElement('div');
+        right.className = 'seat-block';
+        for (let i = 1; i <= row.right; i++)
+          right.appendChild(createSeat(`${row.id}-R-${i}`, i, row.cat, row.price));
+
+        rowDiv.appendChild(left);
+        rowDiv.appendChild(lbl);
+        rowDiv.appendChild(right);
+        container.appendChild(rowDiv);
+      });
+    }
+
+    /* ================================================================
+       RENDER GROUND CHAIRS — offset-based to match image shape
+       Each row: [offset blank cells] [left seats] [aisle] [right seats]
+       Max width = 23 + 23 = 46 seats wide
+       ================================================================ */
+    function renderGroundChairs() {
+      const container = document.getElementById('groundSection');
+      const SEAT_W = 26; // px including gap
+      const AISLE_W = 20;
+      const MAX_LEFT = 23;
+
+      groundRows.forEach((row, idx) => {
+        if (row.id === 'L') return; // row L has no seats in image
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'chair-row';
+        // add margin-bottom based on whether next row has bigger offset (gap row)
+        rowDiv.style.marginBottom = '2px';
+
+        // row label
+        const lbl = document.createElement('div');
+        lbl.className = 'row-label';
+        lbl.style.cssText = 'min-width:22px;text-align:right;margin-right:4px;font-size:0.72rem;color:#777;font-weight:700;';
+        lbl.textContent = row.id;
+        rowDiv.appendChild(lbl);
+
+        // left padding spacer (to align indented rows)
+        if (row.offsetLeft > 0) {
+          const sp = document.createElement('div');
+          sp.style.width = (row.offsetLeft * SEAT_W) + 'px';
+          sp.style.flexShrink = '0';
+          rowDiv.appendChild(sp);
+        }
+
+        // left seats
+        for (let i = 1; i <= row.left; i++) {
+          rowDiv.appendChild(createSeat(`G-${row.id}-${i}`, i, row.cat, row.price));
+        }
+
+        // aisle
+        const aisle = document.createElement('div');
+        aisle.className = 'aisle';
+        rowDiv.appendChild(aisle);
+
+        // right seats
+        for (let i = 1; i <= row.right; i++) {
+          rowDiv.appendChild(createSeat(`G-${row.id}-R${i}`, i, row.cat, row.price));
+        }
+
+        container.appendChild(rowDiv);
+
+        // add visual gap between groups (after row F and after row J)
+        if (row.id === 'F' || row.id === 'J') {
+          const gap = document.createElement('div');
+          gap.className = 'row-gap';
+          container.appendChild(gap);
+        }
+      });
+    }
+
+    /* ================================================================
+       RENDER BALCONY — symmetric split with aisle
+       ================================================================ */
+    function renderBalcony() {
+      const container = document.getElementById('balconySection');
+      balconyRows.forEach(row => {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'chair-row';
+        rowDiv.style.marginBottom = '2px';
+
+        // left seats
+        for (let i = 1; i <= row.left; i++)
+          rowDiv.appendChild(createSeat(`B-${row.id}-L${i}`, i, row.cat, row.price));
+
+        const aisle = document.createElement('div');
+        aisle.className = 'aisle';
+        rowDiv.appendChild(aisle);
+
+        // right seats
+        for (let i = 1; i <= row.right; i++)
+          rowDiv.appendChild(createSeat(`B-${row.id}-R${i}`, i, row.cat, row.price));
+
+        container.appendChild(rowDiv);
+      });
+    }
+
+    /* ================================================================
+       SEAT SELECTION + CAP ENFORCEMENT
+       Cap: max 1 sofa, max 2 chairs per session
+       ================================================================ */
+    function isSofaSeat(cat) { return cat === 'platinum' || cat === 'gold'; }
+
+    function toggleSeat(id, el, cat) {
+      const status = seatStatus[id] || 'available';
+      if (status !== 'available') return;
+
+      if (selectedSeats.has(id)) {
+        selectedSeats.delete(id);
+        el.classList.remove('selected');
+      } else {
+        // enforce cap
+        const sofaCount  = [...selectedSeats].filter(sid => {
+          const se = document.querySelector(`.seat[data-id="${sid}"]`);
+          return se && (se.classList.contains('platinum') || se.classList.contains('gold'));
+        }).length;
+        const chairCount = [...selectedSeats].filter(sid => {
+          const se = document.querySelector(`.seat[data-id="${sid}"]`);
+          return se && (se.classList.contains('chair-ground') || se.classList.contains('chair-balcony'));
+        }).length;
+
+        const isSofa  = el.classList.contains('platinum') || el.classList.contains('gold');
+        const isChair = el.classList.contains('chair-ground') || el.classList.contains('chair-balcony');
+
+        if (isSofa && sofaCount >= 1) {
+          alert('⚠️ You can only book 1 Sofa seat per booking.');
+          return;
+        }
+        if (isChair && chairCount >= 2) {
+          alert('⚠️ You can only book 2 Chair seats per booking.');
+          return;
+        }
+
+        selectedSeats.add(id);
+        el.classList.add('selected');
+      }
+      updatePanel();
+    }
+
+    function clearSelection() {
+      selectedSeats.forEach(id => {
+        const el = document.querySelector(`.seat[data-id="${id}"]`);
+        if (el) el.classList.remove('selected');
+      });
+      selectedSeats.clear();
+      updatePanel();
+    }
+
+    function updatePanel() {
+      const list  = document.getElementById('selectedList');
+      const count = document.getElementById('count');
+      const total = document.getElementById('totalAmount');
+      const btn   = document.getElementById('proceedBtn');
+      list.innerHTML = '';
+      let base = 0;
+      selectedSeats.forEach(id => {
+        const el = document.querySelector(`.seat[data-id="${id}"]`);
+        if (el) {
+          const p = parseInt(el.dataset.price);
+          base += p;
+          const tag = document.createElement('span');
+          tag.className = 'tag';
+          tag.textContent = `${id} (₹${p.toLocaleString('en-IN')})`;
+          list.appendChild(tag);
+        }
+      });
+      const gst    = Math.round(base * GST_RATE);
+      const grand  = base + gst;
+      count.textContent = selectedSeats.size;
+      total.textContent = '₹' + grand.toLocaleString('en-IN');
+      btn.disabled = selectedSeats.size === 0;
+    }
+
+    /* ================================================================
+       PROCEED TO PAYMENT — build order summary with GST breakdown
+       ================================================================ */
+    function proceedToPayment() {
+      const sec = document.getElementById('paymentSection');
+      sec.style.display = 'block';
+      sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      const summary = document.getElementById('orderSummary');
+      let html = `<table style="width:100%;border-collapse:collapse;font-size:0.95rem;">
+        <thead><tr style="background:#f1f1f1;">
+          <th style="padding:10px;text-align:left;border-bottom:2px solid #ddd;">Seat</th>
+          <th style="padding:10px;text-align:left;border-bottom:2px solid #ddd;">Category</th>
+          <th style="padding:10px;text-align:right;border-bottom:2px solid #ddd;">Base Price</th>
+        </tr></thead><tbody>`;
+
+      let base = 0;
+      selectedSeats.forEach(id => {
+        const el    = document.querySelector(`.seat[data-id="${id}"]`);
+        const price = parseInt(el.dataset.price);
+        base += price;
+        let cat = 'Seat';
+        if (el.classList.contains('platinum'))     cat = 'Sofa Platinum';
+        else if (el.classList.contains('gold'))    cat = 'Sofa Gold';
+        else if (el.classList.contains('chair-ground'))   cat = 'Ground Chair';
+        else if (el.classList.contains('chair-balcony'))  cat = 'Balcony Chair';
+        html += `<tr><td style="padding:10px;border-bottom:1px solid #eee;">${id}</td>
+          <td style="padding:10px;border-bottom:1px solid #eee;">${cat}</td>
+          <td style="padding:10px;border-bottom:1px solid #eee;text-align:right;font-weight:700;">₹${price.toLocaleString('en-IN')}</td></tr>`;
+      });
+
+      const gst   = Math.round(base * GST_RATE);
+      const grand = base + gst;
+
+      html += `</tbody><tfoot>
+        <tr class="gst-row">
+          <td colspan="2" style="padding:10px 10px 6px;color:#555;font-size:0.88rem;">Subtotal</td>
+          <td style="padding:10px 10px 6px;text-align:right;font-size:0.88rem;">₹${base.toLocaleString('en-IN')}</td>
+        </tr>
+        <tr class="gst-row">
+          <td colspan="2" style="padding:4px 10px 10px;color:#555;font-size:0.88rem;">GST @ 18%</td>
+          <td style="padding:4px 10px 10px;text-align:right;font-size:0.88rem;">₹${gst.toLocaleString('en-IN')}</td>
+        </tr>
+        <tr style="font-weight:900;background:#f9f9f9;">
+          <td colspan="2" style="padding:12px;color:var(--bni-navy);">Total Payable (incl. GST)</td>
+          <td style="padding:12px;text-align:right;color:var(--bni-red);font-size:1.15rem;">₹${grand.toLocaleString('en-IN')}</td>
+        </tr></tfoot></table>`;
+
+      summary.innerHTML = html;
+    }
+
+    /* ================================================================
+       SUBMIT BOOKING — enforce unique email/phone
+       ================================================================ */
+    function submitBooking() {
+      const name  = document.getElementById('custName').value.trim();
+      const email = document.getElementById('custEmail').value.trim().toLowerCase();
+      const phone = document.getElementById('custPhone').value.trim();
+      const file  = document.getElementById('fileInput').files[0];
+
+      if (!name)                    { alert('Please enter your full name.');        return; }
+      if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
+      if (!phone || phone.length < 10)    { alert('Please enter a valid phone number.');  return; }
+      if (!file)                    { alert('Please upload the payment screenshot.'); return; }
+
+      // Check uniqueness
+      const existingBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+      const dupEmail = existingBookings.find(b => b.email.toLowerCase() === email);
+      const dupPhone = existingBookings.find(b => b.phone === phone);
+      if (dupEmail) {
+        alert('⚠️ A booking with this email address already exists. Each email can only be used once.');
+        return;
+      }
+      if (dupPhone) {
+        alert('⚠️ A booking with this phone number already exists. Each phone number can only be used once.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base  = Array.from(selectedSeats).reduce((sum, id) => {
+          const el = document.querySelector(`.seat[data-id="${id}"]`);
+          return sum + (el ? parseInt(el.dataset.price) : 0);
+        }, 0);
+        const gst   = Math.round(base * GST_RATE);
+        const grand = base + gst;
+
+        const booking = {
+          id: 'BK-' + Date.now(),
+          name, email, phone,
+          seats: Array.from(selectedSeats),
+          baseAmount: base,
+          gst: gst,
+          total: grand,
+          screenshot: e.target.result,
+          status: 'pending',
+          date: new Date().toISOString()
+        };
+
+        const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+        bookings.push(booking);
+        localStorage.setItem('bookings', JSON.stringify(bookings));
+
+        selectedSeats.forEach(id => {
+          seatStatus[id] = 'pending';
+          const el = document.querySelector(`.seat[data-id="${id}"]`);
+          if (el) { el.classList.remove('selected'); el.classList.add('pending'); }
+        });
+        localStorage.setItem('seatStatus', JSON.stringify(seatStatus));
+
+        alert(`✅ Booking submitted!\nBooking ID: ${booking.id}\nTotal Paid: ₹${grand.toLocaleString('en-IN')} (incl. 18% GST)\n\nAdmin will verify your payment shortly.`);
+        selectedSeats.clear();
+        updatePanel();
+        document.getElementById('paymentSection').style.display = 'none';
+        document.getElementById('paidCheckbox').checked = false;
+        document.getElementById('uploadForm').style.display = 'none';
+        document.getElementById('custName').value  = '';
+        document.getElementById('custEmail').value = '';
+        document.getElementById('custPhone').value = '';
+        document.getElementById('fileInput').value = '';
+        document.getElementById('fileLabel').textContent = 'Click here to upload screenshot';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    /* ================================================================
+       INIT
+       ================================================================ */
+    document.addEventListener('DOMContentLoaded', () => {
+      renderSofa();
+      renderGroundChairs();
+      renderBalcony();
+      updatePanel();
+
+      document.getElementById('paidCheckbox').addEventListener('change', function() {
+        document.getElementById('uploadForm').style.display = this.checked ? 'block' : 'none';
+      });
+      document.getElementById('fileInput').addEventListener('change', function() {
+        const label = document.getElementById('fileLabel');
+        label.textContent = this.files[0] ? this.files[0].name : 'Click here to upload screenshot';
+        label.style.color = this.files[0] ? 'var(--bni-navy)' : '#666';
+      });
+    });
+  </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
