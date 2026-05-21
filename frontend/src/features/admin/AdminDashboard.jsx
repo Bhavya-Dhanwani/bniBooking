@@ -22,14 +22,14 @@ export default function AdminDashboard() {
       setStats(statsData);
     } catch (error) {
       clearAdminToken();
-      router.replace("/admin/login");
+      router.push("/admin/login");
     }
   }, [router]);
 
   useEffect(() => {
     const storedToken = getAdminToken();
     if (!storedToken) {
-      router.replace("/admin/login");
+      router.push("/admin/login");
       return;
     }
     Promise.resolve().then(() => loadData(storedToken));
@@ -50,7 +50,7 @@ export default function AdminDashboard() {
 
   function logout() {
     clearAdminToken();
-    router.replace("/admin/login");
+    router.push("/admin/login");
   }
 
   const filteredBookings = useMemo(() => {
@@ -115,6 +115,7 @@ export default function AdminDashboard() {
                 <tr>
                   <th>Booking ID</th>
                   <th>Customer</th>
+                  <th>GST No.</th>
                   <th>Seats</th>
                   <th>Amount</th>
                   <th>Screenshot</th>
@@ -139,6 +140,7 @@ export default function AdminDashboard() {
                         {booking.phone}
                       </small>
                     </td>
+                    <td>{booking.gstNumber || "-"}</td>
                     <td>
                       {booking.seats.map((seat) => (
                         <span className={styles.seatTag} key={seat}>

@@ -6,13 +6,14 @@ npm warn Unknown env config "arch". This will stop working in the next major ver
 ▲ Next.js 16.2.6 (Turbopack)
 - Local:         http://127.0.0.1:3001
 - Network:       http://127.0.0.1:3001
-✓ Ready in 448ms
+- Environments: .env
+✓ Ready in 1091ms
 ⨯ Another next dev server is already running.
 
 - Local:        http://localhost:3000
-- PID:          11844
+- PID:          20348
 - Dir:          D:\Projects\BNI\frontend
 - Log:          .next\dev\logs\next-development.log
 
-Run taskkill /PID 11844 /F to stop it.
+Run taskkill /PID 20348 /F to stop it.
 [?25h

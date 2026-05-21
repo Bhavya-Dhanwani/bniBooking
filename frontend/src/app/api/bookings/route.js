@@ -1,0 +1,64 @@
+import Booking, { allowRepeatedContactBookings } from "@/server/models/Booking";
+import { connectDb } from "@/server/db";
+import { randomUUID } from "crypto";
+import { createError, errorResponse, json } from "@/server/http";
+import { getSeatStatusMap } from "@/server/services/bookingService";
+import { sendMailSafely, sendPendingBookingEmail } from "@/server/services/mailService";
+import { uploadPaymentScreenshot } from "@/server/services/cloudinaryService";
+import { calculateTotals, validateSeatCaps } from "@/server/utils/seatPricing";
+
+export const runtime = "nodejs";
+
+export async function POST(request) {
+  try {
+    await connectDb();
+    await allowRepeatedContactBookings();
+
+    const body = await request.json();
+    const name = String(body.name || "").trim();
+    const email = String(body.email || "").trim().toLowerCase();
+    const phone = String(body.phone || "").trim();
+    const gstNumber = String(body.gstNumber || "").trim().toUpperCase();
+    const seats = Array.isArray(body.seats) ? body.seats : [];
+    const screenshot = String(body.screenshot || "");
+
+    if (!name) throw createError("Please enter your full name.");
+    if (!email || !email.includes("@")) throw createError("Please enter a valid email address.");
+    if (!phone || phone.length < 10) throw createError("Please enter a valid phone number.");
+    if (!seats.length) throw createError("Please select at least one seat.");
+    if (!screenshot.startsWith("data:image/")) throw createError("Please upload a payment screenshot.");
+
+    const capError = validateSeatCaps(seats);
+    if (capError) throw createError(capError);
+
+    const seatStatus = await getSeatStatusMap();
+
+    const unavailableSeat = seats.find((seatId) => seatStatus[seatId] && seatStatus[seatId] !== "available");
+    if (unavailableSeat) throw createError(`${unavailableSeat} is no longer available.`);
+
+    const totals = calculateTotals(seats);
+    const bookingId = `BK-${Date.now()}`;
+    const uploadedScreenshot = await uploadPaymentScreenshot(screenshot, bookingId);
+    const booking = await Booking.create({
+      bookingId,
+      name,
+      email,
+      phone,
+      gstNumber,
+      seats,
+      checkInToken: randomUUID(),
+      screenshot: uploadedScreenshot.url,
+      screenshotPublicId: uploadedScreenshot.publicId,
+      ...totals,
+    });
+
+    await sendMailSafely("Pending booking email", () => sendPendingBookingEmail(booking));
+
+    return json(booking, 201);
+  } catch (error) {
+    if (error.code === 11000) {
+      return errorResponse(createError("Unable to create a unique booking. Please try again."));
+    }
+    return errorResponse(error);
+  }
+}

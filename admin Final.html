@@ -12,7 +12,9 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f5f7fa;
+      background:
+        radial-gradient(circle at top left, rgba(227,24,55,0.10), transparent 35%),
+        linear-gradient(180deg, #f7f9fc 0%, #eef3f8 100%);
       color: #333;
       padding-bottom: 40px;
     }
@@ -63,10 +65,10 @@
       margin-bottom: 24px;
     }
     .stat-card {
-      background: white;
+      background: rgba(255,255,255,0.96);
       padding: 18px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border-radius: 14px;
+      box-shadow: 0 10px 26px rgba(0,34,68,0.08);
       text-align: center;
       border-top: 3px solid var(--bni-red);
     }
@@ -230,6 +232,7 @@
           <tr>
             <th>Booking ID</th>
             <th>Customer</th>
+            <th>GST No.</th>
             <th>Seats</th>
             <th>Amount</th>
             <th>Screenshot</th>
@@ -254,10 +257,43 @@
   <script>
     let allBookings = [];
     let currentFilter = 'all';
+    const REMOVED_SEAT_IDS = new Set(['G-J-31','G-J-32','G-J-33','G-J-34','G-J-35','G-J-36','S6-L-6','S6-L-7','S6-R-6','S6-R-7']);
+
+    function getDefaultPreBookedStatus() {
+      const status = {};
+      for (let i = 1; i <= 5; i++) {
+        status[`S1-L-${i}`] = 'booked';
+        status[`S1-R-${i}`] = 'booked';
+      }
+      for (let i = 1; i <= 7; i++) {
+        status[`S5-L-${i}`] = 'booked';
+        status[`S5-R-${i}`] = 'booked';
+      }
+      return status;
+    }
+
+    function applyPreBookedSeats(seatStatus) {
+      let changed = false;
+      const preBooked = getDefaultPreBookedStatus();
+      Object.keys(preBooked).forEach(id => {
+        if (seatStatus[id] !== 'booked') {
+          seatStatus[id] = 'booked';
+          changed = true;
+        }
+      });
+      REMOVED_SEAT_IDS.forEach(id => {
+        if (seatStatus[id]) {
+          delete seatStatus[id];
+          changed = true;
+        }
+      });
+      if (changed) localStorage.setItem('seatStatus', JSON.stringify(seatStatus));
+      return seatStatus;
+    }
 
     function loadData() {
       allBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-      const seatStatus = JSON.parse(localStorage.getItem('seatStatus') || '{}');
+      const seatStatus = applyPreBookedSeats(JSON.parse(localStorage.getItem('seatStatus') || '{}'));
       renderStats(seatStatus);
       renderTable();
     }
@@ -322,6 +358,11 @@
         const tdCust = document.createElement('td');
         tdCust.innerHTML = `<div style="font-weight:700;">${escapeHtml(b.name)}</div><small style="color:#777;">${escapeHtml(b.email)}<br>${escapeHtml(b.phone)}</small>`;
         tr.appendChild(tdCust);
+
+        // GST Number
+        const tdGst = document.createElement('td');
+        tdGst.innerHTML = b.gstNumber ? `<strong>${escapeHtml(b.gstNumber)}</strong>` : '<span style="color:#aaa;">-</span>';
+        tr.appendChild(tdGst);
 
         // Seats
         const tdSeats = document.createElement('td');
@@ -398,9 +439,12 @@
       if (!booking) return;
 
       booking.status = confirm ? 'confirmed' : 'rejected';
+      const preBooked = getDefaultPreBookedStatus();
       booking.seats.forEach(sid => {
-        seatStatus[sid] = confirm ? 'booked' : 'available';
+        if (REMOVED_SEAT_IDS.has(sid)) return;
+        seatStatus[sid] = confirm || preBooked[sid] ? 'booked' : 'available';
       });
+      seatStatus = applyPreBookedSeats(seatStatus);
 
       localStorage.setItem('bookings', JSON.stringify(bookings));
       localStorage.setItem('seatStatus', JSON.stringify(seatStatus));
@@ -410,7 +454,7 @@
     function clearAllData() {
       if (!confirm('WARNING: This will delete ALL bookings and release ALL seats. Are you sure?')) return;
       localStorage.removeItem('bookings');
-      localStorage.removeItem('seatStatus');
+      localStorage.setItem('seatStatus', JSON.stringify(getDefaultPreBookedStatus()));
       loadData();
     }
 
@@ -429,7 +473,5 @@
     }
 
     loadData();
-  </script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-</body>
+  </script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ff3ff2c1f57ff7a',t:'MTc3OTM3MDg2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

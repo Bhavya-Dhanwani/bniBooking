@@ -1,8 +1,10 @@
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "";
 
-const API_BASE_URL = backendUrl.endsWith("/api")
-  ? backendUrl
-  : `${backendUrl.replace(/\/$/, "")}/api`;
+const API_BASE_URL = backendUrl
+  ? backendUrl.endsWith("/api")
+    ? backendUrl
+    : `${backendUrl.replace(/\/$/, "")}/api`
+  : "/api";
 
 async function request(path, options = {}) {
   const response = await fetch(`${API_BASE_URL}${path}`, {

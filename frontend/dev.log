@@ -4,10 +4,10 @@ npm warn Unknown env config "arch". This will stop working in the next major ver
 > next dev --hostname 127.0.0.1 -p 3000
 
 ⨯ Failed to start server
-Error: listen EADDRINUSE: address already in use 127.0.0.1:3000
-    at <unknown> (Error: listen EADDRINUSE: address already in use 127.0.0.1:3000) {
-  code: 'EADDRINUSE',
-  errno: -4091,
+Error: listen EACCES: permission denied 127.0.0.1:3000
+    at <unknown> (Error: listen EACCES: permission denied 127.0.0.1:3000) {
+  code: 'EACCES',
+  errno: -4092,
   syscall: 'listen',
   address: '127.0.0.1',
   port: 3000

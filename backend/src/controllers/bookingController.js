@@ -1,6 +1,7 @@
 import Booking from "../models/Booking.js";
 import { getSeatStatusMap, getStats } from "../services/bookingService.js";
 import { deletePaymentScreenshots, uploadPaymentScreenshot } from "../services/cloudinaryService.js";
+import { sendConfirmedBookingEmail, sendMailSafely, sendPendingBookingEmail } from "../services/mailService.js";
 import { calculateTotals, validateSeatCaps } from "../utils/seatPricing.js";
 
 function createError(message, statusCode = 400) {
@@ -63,6 +64,8 @@ export async function createBooking(req, res, next) {
       ...totals,
     });
 
+    await sendMailSafely("Pending booking email", () => sendPendingBookingEmail(booking));
+
     res.status(201).json(booking);
   } catch (error) {
     if (error.code === 11000) {
@@ -97,13 +100,18 @@ export async function updateBookingStatus(req, res, next) {
       throw createError("Status must be confirmed or rejected.");
     }
 
+    const previousBooking = await Booking.findOne({ bookingId: req.params.id });
+    if (!previousBooking) throw createError("Booking not found.", 404);
+
     const booking = await Booking.findOneAndUpdate(
       { bookingId: req.params.id },
       { status },
       { new: true },
     );
 
-    if (!booking) throw createError("Booking not found.", 404);
+    if (status === "confirmed" && previousBooking.status !== "confirmed") {
+      await sendMailSafely("Confirmed booking email", () => sendConfirmedBookingEmail(booking));
+    }
 
     res.json(booking);
   } catch (error) {
