@@ -5,26 +5,34 @@ export function formatMoney(value) {
 }
 
 export function calculateTotals(selectedSeats) {
+  const firstSeat = selectedSeats.find((seat) => isSofaSeat(seat) || isChairSeat(seat));
+  const firstType = firstSeat ? (isSofaSeat(firstSeat) ? "sofa" : "chair") : null;
+  let sofaDiscountedLeft = firstType === "sofa" ? 1 : 0;
+  let chairDiscountedLeft = firstType === "chair" ? 2 : 0;
+
   let sofaCount = 0;
   let chairCount = 0;
   const items = selectedSeats.map((seat) => {
-    const isSofa = seat.cat === "platinum" || seat.cat === "gold";
+    const isSofa = isSofaSeat(seat);
+    const isChair = isChairSeat(seat);
     const standardPrice = seat.price;
     const extraPrice = seat.extraPrice || seat.price;
-    let chargedPrice = standardPrice;
+    let chargedPrice = extraPrice;
     let priceLabel = "Standard";
 
     if (isSofa) {
       sofaCount += 1;
-      if (sofaCount > 1) {
-        chargedPrice = extraPrice;
-        priceLabel = "Additional";
+      if (sofaDiscountedLeft > 0) {
+        chargedPrice = standardPrice;
+        priceLabel = "Discounted";
+        sofaDiscountedLeft -= 1;
       }
-    } else {
+    } else if (isChair) {
       chairCount += 1;
-      if (chairCount > 2) {
-        chargedPrice = extraPrice;
-        priceLabel = "Additional";
+      if (chairDiscountedLeft > 0) {
+        chargedPrice = standardPrice;
+        priceLabel = "Discounted";
+        chairDiscountedLeft -= 1;
       }
     }
 
@@ -38,5 +46,21 @@ export function calculateTotals(selectedSeats) {
     base,
     gst,
     total: base + gst,
+    bundle: firstType,
+    sofaCount,
+    chairCount,
   };
+}
+
+function isSofaSeat(seat) {
+  return seat?.cat === "platinum" || seat?.cat === "gold";
+}
+
+function isChairSeat(seat) {
+  return (
+    seat?.cat === "chair-ground" ||
+    seat?.cat === "chair-balcony" ||
+    seat?.cat === "chairGround" ||
+    seat?.cat === "chairBalcony"
+  );
 }

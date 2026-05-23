@@ -21,12 +21,15 @@ export async function POST(request) {
     const gstNumber = String(body.gstNumber || "").trim().toUpperCase();
     const seats = Array.isArray(body.seats) ? body.seats : [];
     const screenshot = String(body.screenshot || "");
+    const paymentMethod = ["upi", "imps", "cash"].includes(body.paymentMethod) ? body.paymentMethod : "upi";
 
     if (!name) throw createError("Please enter your full name.");
     if (!email || !email.includes("@")) throw createError("Please enter a valid email address.");
     if (!phone || phone.length < 10) throw createError("Please enter a valid phone number.");
     if (!seats.length) throw createError("Please select at least one seat.");
-    if (!screenshot.startsWith("data:image/")) throw createError("Please upload a payment screenshot.");
+    if (paymentMethod !== "cash" && !screenshot.startsWith("data:image/")) {
+      throw createError("Please upload a payment screenshot.");
+    }
 
     const capError = validateSeatCaps(seats);
     if (capError) throw createError(capError);
@@ -38,7 +41,9 @@ export async function POST(request) {
 
     const totals = calculateTotals(seats);
     const bookingId = `BK-${Date.now()}`;
-    const uploadedScreenshot = await uploadPaymentScreenshot(screenshot, bookingId);
+    const uploadedScreenshot = screenshot.startsWith("data:image/")
+      ? await uploadPaymentScreenshot(screenshot, bookingId)
+      : { url: "", publicId: "" };
     const booking = await Booking.create({
       bookingId,
       name,
@@ -46,6 +51,7 @@ export async function POST(request) {
       phone,
       gstNumber,
       seats,
+      paymentMethod,
       checkInToken: randomUUID(),
       screenshot: uploadedScreenshot.url,
       screenshotPublicId: uploadedScreenshot.publicId,

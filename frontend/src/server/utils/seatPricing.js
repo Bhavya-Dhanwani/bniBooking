@@ -5,29 +5,37 @@ export function isSofaSeat(seatId) {
 }
 
 export function calculateTotals(seats) {
+  const seatDetails = seats.map((seatId) => ({ seatId, seat: getSeatById(seatId) }));
+  const firstSeat = seatDetails.find(({ seat }) => seat && (isSofaCategory(seat.cat) || isChairCategory(seat.cat)));
+  const firstType = firstSeat ? (isSofaCategory(firstSeat.seat.cat) ? "sofa" : "chair") : null;
+  let sofaDiscountedLeft = firstType === "sofa" ? 1 : 0;
+  let chairDiscountedLeft = firstType === "chair" ? 2 : 0;
+
   let sofaCount = 0;
   let chairCount = 0;
-  const priceBreakup = seats.map((seatId) => {
-    const seat = getSeatById(seatId);
+  const priceBreakup = seatDetails.map(({ seatId, seat }) => {
     if (!seat) {
       return { id: seatId, price: 0, priceType: "Unknown" };
     }
 
     const isSofa = isSofaCategory(seat.cat);
-    let chargedPrice = seat.price;
+    const isChair = isChairCategory(seat.cat);
+    let chargedPrice = seat.extraPrice || seat.price;
     let priceLabel = "Standard";
 
     if (isSofa) {
       sofaCount += 1;
-      if (sofaCount > 1) {
-        chargedPrice = seat.extraPrice || seat.price;
-        priceLabel = "Additional";
+      if (sofaDiscountedLeft > 0) {
+        chargedPrice = seat.price;
+        priceLabel = "Discounted";
+        sofaDiscountedLeft -= 1;
       }
-    } else {
+    } else if (isChair) {
       chairCount += 1;
-      if (chairCount > 2) {
-        chargedPrice = seat.extraPrice || seat.price;
-        priceLabel = "Additional";
+      if (chairDiscountedLeft > 0) {
+        chargedPrice = seat.price;
+        priceLabel = "Discounted";
+        chairDiscountedLeft -= 1;
       }
     }
 
@@ -42,7 +50,14 @@ export function calculateTotals(seats) {
     baseAmount,
     gst,
     total: baseAmount + gst,
+    bundle: firstType,
+    sofaCount,
+    chairCount,
   };
+}
+
+function isChairCategory(cat) {
+  return cat === "chair-ground" || cat === "chair-balcony" || cat === "chairGround" || cat === "chairBalcony";
 }
 
 export function validateSeatCaps(seats) {

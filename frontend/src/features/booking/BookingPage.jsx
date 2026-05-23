@@ -22,7 +22,7 @@ function Seat({ id, label, cat, price, extraPrice, status, selected, onToggle, p
       type="button"
       className={className}
       style={pdfStyle}
-      title={`${id} - Standard ${formatMoney(price)} / Additional ${formatMoney(extraPrice || price)} + 18% GST`}
+      title={`${id} - Discounted ${formatMoney(price)} / Standard ${formatMoney(extraPrice || price)} + 18% GST`}
       onClick={() => onToggle({ id, label, cat, price, extraPrice: extraPrice || price })}
       disabled={status !== "available"}
     >
@@ -36,6 +36,7 @@ export default function BookingPage() {
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [paymentVisible, setPaymentVisible] = useState(false);
   const [paid, setPaid] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("upi");
   const [form, setForm] = useState({ name: "", email: "", phone: "", gstNumber: "" });
   const [fileLabel, setFileLabel] = useState("Click here to upload screenshot");
   const [screenshot, setScreenshot] = useState("");
@@ -50,10 +51,11 @@ export default function BookingPage() {
   }, []);
 
   const totals = useMemo(() => calculateTotals(selectedSeats), [selectedSeats]);
-
   const upiQrSrc = useMemo(() => `/api/upi-qr?amount=${totals.total}`, [totals.total]);
   const preBookedSeatIds = useMemo(() => new Set(getPreBookedSeatIds()), []);
-  const pdfScale = 1.56;
+  const selectedIds = new Set(selectedSeats.map((seat) => seat.id));
+  const pdfDisplayWidth = 1180;
+  const pdfScale = pdfDisplayWidth / PDF_LAYOUT.w;
 
   function toggleSeat(seat) {
     if (seatStatus[seat.id] && seatStatus[seat.id] !== "available") return;
@@ -98,7 +100,7 @@ export default function BookingPage() {
     if (!form.name.trim()) return alert("Please enter your full name.");
     if (!form.email.trim().includes("@")) return alert("Please enter a valid email address.");
     if (!form.phone.trim() || form.phone.trim().length < 10) return alert("Please enter a valid phone number.");
-    if (!screenshot) return alert("Please upload the payment screenshot.");
+    if (paymentMethod !== "cash" && !screenshot) return alert("Please upload the payment screenshot.");
 
     setLoading(true);
     try {
@@ -108,6 +110,7 @@ export default function BookingPage() {
         phone: form.phone,
         gstNumber: form.gstNumber,
         seats: selectedSeats.map((seat) => seat.id),
+        paymentMethod,
         screenshot,
       });
 
@@ -123,6 +126,7 @@ export default function BookingPage() {
       setSelectedSeats([]);
       setPaymentVisible(false);
       setPaid(false);
+      setPaymentMethod("upi");
       setForm({ name: "", email: "", phone: "", gstNumber: "" });
       setScreenshot("");
       setFileLabel("Click here to upload screenshot");
@@ -134,8 +138,6 @@ export default function BookingPage() {
       setLoading(false);
     }
   }
-
-  const selectedIds = new Set(selectedSeats.map((seat) => seat.id));
 
   return (
     <main className={styles.page}>
@@ -153,11 +155,37 @@ export default function BookingPage() {
         </div>
       </header>
 
+      <section className={styles.hero}>
+        <div className={styles.heroInner}>
+          <span className={styles.eyebrow}>An Evening of Poetry & Stories</span>
+          <OrnateDivider />
+          <h1 className={styles.heroTitle}>
+            Laksh Maheshwari <br />
+            <span>LIVE</span>
+          </h1>
+          <p className={styles.urduLine}>Shayari · Kahaaniyan · Mausiqi</p>
+          <p className={styles.heroSub}>
+            A soulful mehfil hosted by BNI Kutch. Select seats, review GST-inclusive pricing, and complete payment for
+            admin verification.
+          </p>
+          <div className={styles.heroMeta}>
+            <span>BNI Kutch Chapter</span>
+            <span>Premium Sofa & Chair Seating</span>
+            <span>Secure Verification</span>
+          </div>
+        </div>
+      </section>
+
       <div className={styles.container}>
-        <div className={styles.capNotice}>
-          <strong>Pricing Rule:</strong> A member gets standard pricing for <strong>1 Sofa seat</strong> and{" "}
-          <strong>up to 2 Chair seats</strong>. If more seats are selected, additional seats are charged at the higher
-          additional-seat rate shown below. <strong>18% GST is added on the total.</strong>
+        <div className={styles.ruleCard}>
+          <div className={styles.ruleIcon}>*</div>
+          <div className={styles.ruleBody}>
+            <strong>Pricing Rule:</strong> Discounted pricing applies to <strong>1 Sofa</strong> <em>OR</em>{" "}
+            <strong>up to 2 Chairs</strong> per booking - <u>whichever you pick first</u>. Once that allowance is used,
+            every additional seat (extra sofa, extra chair, or seats of the other type) is charged at the{" "}
+            <strong>Standard</strong> rate shown below.{" "}
+            <strong>18% GST is added on the total.</strong>
+          </div>
         </div>
 
         <div className={styles.legend}>
@@ -173,65 +201,71 @@ export default function BookingPage() {
         <PriceTable />
 
         <div className={styles.seatMapWrapper}>
-          <div className={styles.stage}>S T A G E</div>
+          <div className={styles.stageWrap}>
+            <div className={`${styles.lantern} ${styles.lanternLeft}`} />
+            <div className={`${styles.lantern} ${styles.lanternRight}`} />
+            <div className={styles.stage}>MEHFIL</div>
+          </div>
 
-          <div className={styles.sectionTitle}>Sofa Seating - Ground Floor</div>
+          <div className={styles.sectionTitle}>Diwan-e-Khas - Sofa Seating</div>
           <div className={styles.sofaRows}>
             {sofaRows.map((row) => (
               <div className={styles.sofaRow} key={row.id}>
                 <div className={styles.seatBlock}>
-                  {Array.from({ length: row.left }, (_, index) => (
-                    <Seat
-                      key={`${row.id}-L-${index + 1}`}
-                      id={`${row.id}-L-${index + 1}`}
-                      label={index + 1}
-                      cat={row.cat}
-                      price={row.price}
-                      extraPrice={row.extraPrice}
-                      status={
-                        preBookedSeatIds.has(`${row.id}-L-${index + 1}`)
-                          ? "booked"
-                          : seatStatus[`${row.id}-L-${index + 1}`] || "available"
-                      }
-                      selected={selectedIds.has(`${row.id}-L-${index + 1}`)}
-                      onToggle={toggleSeat}
-                    />
-                  ))}
+                  {Array.from({ length: row.left }, (_, index) => {
+                    const id = `${row.id}-L-${index + 1}`;
+                    return (
+                      <Seat
+                        key={id}
+                        id={id}
+                        label={index + 1}
+                        cat={row.cat}
+                        price={row.price}
+                        extraPrice={row.extraPrice}
+                        status={preBookedSeatIds.has(id) ? "booked" : seatStatus[id] || "available"}
+                        selected={selectedIds.has(id)}
+                        onToggle={toggleSeat}
+                      />
+                    );
+                  })}
                 </div>
                 <div className={styles.rowLabel}>{row.label}</div>
                 <div className={styles.seatBlock}>
-                  {Array.from({ length: row.right }, (_, index) => (
-                    <Seat
-                      key={`${row.id}-R-${index + 1}`}
-                      id={`${row.id}-R-${index + 1}`}
-                      label={index + 1}
-                      cat={row.cat}
-                      price={row.price}
-                      extraPrice={row.extraPrice}
-                      status={
-                        preBookedSeatIds.has(`${row.id}-R-${index + 1}`)
-                          ? "booked"
-                          : seatStatus[`${row.id}-R-${index + 1}`] || "available"
-                      }
-                      selected={selectedIds.has(`${row.id}-R-${index + 1}`)}
-                      onToggle={toggleSeat}
-                    />
-                  ))}
+                  {Array.from({ length: row.right }, (_, index) => {
+                    const id = `${row.id}-R-${index + 1}`;
+                    return (
+                      <Seat
+                        key={id}
+                        id={id}
+                        label={index + 1}
+                        cat={row.cat}
+                        price={row.price}
+                        extraPrice={row.extraPrice}
+                        status={preBookedSeatIds.has(id) ? "booked" : seatStatus[id] || "available"}
+                        selected={selectedIds.has(id)}
+                        onToggle={toggleSeat}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             ))}
           </div>
 
-          <div className={styles.sectionTitle}>Ground Floor Seating &amp; First Floor Seating</div>
+          <div className={styles.sectionTitle}>Mehfil Seating - Ground &amp; First Floor</div>
           <div className={styles.pdfMapScroll}>
             <div
               className={styles.pdfSeatMap}
-              style={{ width: `${PDF_LAYOUT.w * pdfScale}px`, height: `${PDF_LAYOUT.h * pdfScale}px` }}
+              style={{
+                width: `${pdfDisplayWidth}px`,
+                height: `${PDF_LAYOUT.h * pdfScale}px`,
+                backgroundImage: `url('/${PDF_LAYOUT.image}')`,
+              }}
             >
               <div className={styles.mapFloorLabel} style={{ top: "8px" }}>
                 GROUND FLOOR SEATING
               </div>
-              <div className={styles.mapFloorLabel} style={{ top: `${106 * pdfScale}px` }}>
+              <div className={`${styles.mapFloorLabel} ${styles.firstFloor}`} style={{ top: `${106 * pdfScale}px` }}>
                 FIRST FLOOR SEATING
               </div>
               {PDF_LAYOUT.seats
@@ -261,37 +295,82 @@ export default function BookingPage() {
 
         {paymentVisible && (
           <section className={styles.paymentSection} ref={paymentRef}>
-            <h2>Complete Payment</h2>
+            <div className={styles.stepBar}>
+              <div className={styles.step}>
+                <span>1</span> Select Seats
+              </div>
+              <div className={`${styles.step} ${styles.stepActive}`}>
+                <span>2</span> Review &amp; Pay
+              </div>
+              <div className={styles.step}>
+                <span>3</span> Admin Verification
+              </div>
+            </div>
+            <h2>Payment &amp; Confirmation</h2>
+            <p className={styles.paymentIntro}>
+              Review your selection, complete payment, and upload the screenshot for admin verification. 18% GST is
+              included in the total.
+            </p>
             <OrderSummary selectedSeats={selectedSeats} totals={totals} />
 
-            <div className={styles.paymentGrid}>
-              <div className={styles.paymentBox}>
-                <h3 className={styles.paymentTitle}>UPI Payment</h3>
-                <div className={styles.qrBox}>
-                  <img
-                    className={styles.qrImage}
-                    src={upiQrSrc}
-                    alt={`UPI QR code for ${formatMoney(totals.total)} payable to munjalshah9@okicici`}
-                  />
+            <div className={styles.paymentMethodPicker}>
+              <label htmlFor="paymentMethod">Select Payment Method</label>
+              <select
+                id="paymentMethod"
+                className={styles.pmSelect}
+                value={paymentMethod}
+                onChange={(event) => setPaymentMethod(event.target.value)}
+              >
+                <option value="upi">UPI - Scan QR / pay to munjalshah9@okicici</option>
+                <option value="imps">IMPS / NEFT - Bank Transfer</option>
+                <option value="cash">Cash - Pay at the venue</option>
+              </select>
+            </div>
+
+            <div className={styles.paymentMethodPanels}>
+              {paymentMethod === "upi" && (
+                <div className={styles.pmPanel}>
+                  <h3 className={styles.pmTitle}>UPI Payment</h3>
+                  <div className={styles.qrBox}>
+                    <img
+                      className={styles.qrImage}
+                      src={upiQrSrc}
+                      alt={`UPI QR code for ${formatMoney(totals.total)} payable to munjalshah9@okicici`}
+                    />
+                  </div>
+                  <p className={styles.upiId}>UPI ID: munjalshah9@okicici</p>
+                  <p className={styles.upiAmount}>Fixed amount: {formatMoney(totals.total)}</p>
+                  <p className={styles.upiApps}>GPay · PhonePe · Paytm · Any UPI App</p>
                 </div>
-                <p className={styles.upiId}>munjalshah9@okicici</p>
-                <p className={styles.upiAmount}>Fixed amount: {formatMoney(totals.total)}</p>
-                <p className={styles.upiApps}>GPay · PhonePe · Paytm · Any UPI App</p>
-              </div>
-              <div className={styles.paymentBox}>
-                <h3 className={styles.paymentTitle}>Bank Transfer</h3>
-                <p className={styles.bankDetails}>
-                  <strong>Account Name:</strong> Imperial Innoventures
-                  <br />
-                  <strong>Account Number:</strong> 0114137470
-                  <br />
-                  <strong>Bank:</strong> Kotak Mahindra Bank
-                  <br />
-                  <strong>Branch:</strong> Gandhidham Branch
-                  <br />
-                  <strong>IFSC Code:</strong> KKBK0000822
-                </p>
-              </div>
+              )}
+
+              {paymentMethod === "imps" && (
+                <div className={styles.pmPanel}>
+                  <h3 className={styles.pmTitle}>IMPS / NEFT - Bank Transfer</h3>
+                  <div className={styles.bankGrid}>
+                    <div><span>Account Name</span><strong>Imperial Innoventures</strong></div>
+                    <div><span>Account Number</span><strong>0114137470</strong></div>
+                    <div><span>Bank</span><strong>Kotak Mahindra Bank</strong></div>
+                    <div><span>Branch</span><strong>Gandhidham Branch</strong></div>
+                    <div><span>IFSC Code</span><strong>KKBK0000822</strong></div>
+                  </div>
+                </div>
+              )}
+
+              {paymentMethod === "cash" && (
+                <div className={styles.pmPanel}>
+                  <h3 className={styles.pmTitle}>Pay in Cash at the BNI Kutch Regional Office</h3>
+                  <p className={styles.cashText}>
+                    Please pay at the BNI Kutch Regional Office on the booking day. Your seats will be marked as pending
+                    until the admin confirms the cash receipt.
+                  </p>
+                  <p className={styles.contactNote}>
+                    Booking: Aditya Sharma +91 99988 13569 | Sponsorship Query: Raj Shah +91 72111 99992 | Meet
+                    Morbia: +91 88666 99994
+                  </p>
+                  <p className={styles.cashNote}>For cash bookings, payment screenshot upload is optional.</p>
+                </div>
+              )}
             </div>
 
             <div className={styles.paidConfirm}>
@@ -316,7 +395,7 @@ export default function BookingPage() {
                   placeholder="Enter GSTIN for invoice (optional)"
                   maxLength={15}
                 />
-                <label>Payment Screenshot</label>
+                <label>Payment Screenshot{paymentMethod === "cash" ? " (Optional)" : ""}</label>
                 <button type="button" className={styles.uploadWrap} onClick={() => fileRef.current?.click()}>
                   <span className={screenshot ? styles.fileSelected : ""}>{fileLabel}</span>
                   <small>PNG, JPG or JPEG (max 2MB)</small>
@@ -337,11 +416,12 @@ export default function BookingPage() {
           <div className={styles.selectedTags}>
             {selectedSeats.map((seat) => (
               <span className={styles.tag} key={seat.id}>
-                {seat.id} ({formatMoney(totals.items.find((item) => item.id === seat.id)?.chargedPrice || seat.price)}{" "}
-                {totals.items.find((item) => item.id === seat.id)?.priceLabel})
+                {seat.id} · {formatMoney(totals.items.find((item) => item.id === seat.id)?.chargedPrice || seat.price)}{" "}
+                {totals.items.find((item) => item.id === seat.id)?.priceLabel === "Discounted" ? "✓" : "+"}
               </span>
             ))}
           </div>
+          {totals.bundle && selectedSeats.length > 0 && <div className={styles.bundleHint}>{getBundleHint(totals.bundle)}</div>}
         </div>
         <div className={styles.panelAction}>
           <button className={`${styles.btn} ${styles.btnOutline}`} onClick={() => setSelectedSeats([])}>
@@ -360,52 +440,55 @@ export default function BookingPage() {
   );
 }
 
+function OrnateDivider() {
+  return (
+    <div className={styles.ornateDivider} aria-hidden="true">
+      <svg viewBox="0 0 220 24">
+        <path d="M10 12H82" />
+        <path d="M138 12H210" />
+        <path d="M110 4c9 0 16 8 16 8s-7 8-16 8-16-8-16-8 7-8 16-8Z" />
+        <circle cx="110" cy="12" r="3" />
+      </svg>
+    </div>
+  );
+}
+
+function PriceCard({ tone, title, sub, standard, extra, swatchClass }) {
+  return (
+    <div className={`${styles.priceCard} ${styles[tone]}`}>
+      <div className={styles.accent} />
+      <div className={styles.pcTitle}>
+        <span className={`${styles.swatch} ${styles[swatchClass]}`} />
+        {title}
+      </div>
+      <div className={styles.pcSub}>{sub}</div>
+      <div className={styles.priceRow}><span>Discounted</span><strong>{formatMoney(standard)}</strong></div>
+      <div className={`${styles.priceRow} ${styles.extra}`}><span>Standard</span><strong>{formatMoney(extra)}</strong></div>
+    </div>
+  );
+}
+
+function getBundleHint(bundle) {
+  if (bundle === "sofa") {
+    return "✓ Sofa allowance active - 1 Sofa at Discounted. Any extra Sofa, and every Chair, is charged at the Standard rate.";
+  }
+  return "✓ Chair allowance active - up to 2 Chairs at Discounted. Any extra Chair, and every Sofa, is charged at the Standard rate.";
+}
+
 function PriceTable() {
   return (
-    <div className={styles.priceCard}>
-      <h2>Ticket Categories &amp; Prices</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Category</th>
-            <th>Details</th>
-            <th>Standard Price</th>
-            <th>Additional Seat Price</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Sofa - Platinum</td>
-            <td>Rows: 2, 3, 4</td>
-            <td>{formatMoney(9000)}</td>
-            <td>{formatMoney(11000)}</td>
-          </tr>
-          <tr>
-            <td>Sofa - Gold</td>
-            <td>Rows: 5, 6, 7, 8</td>
-            <td>{formatMoney(6000)}</td>
-            <td>{formatMoney(7500)}</td>
-          </tr>
-          <tr>
-            <td>Chair - Ground Floor</td>
-            <td>Prime chair seating</td>
-            <td>{formatMoney(999)}</td>
-            <td>{formatMoney(1199)}</td>
-          </tr>
-          <tr>
-            <td>Chair - First Floor</td>
-            <td>First floor chair seating</td>
-            <td>{formatMoney(699)}</td>
-            <td>{formatMoney(899)}</td>
-          </tr>
-        </tbody>
-      </table>
-      <p>
-        <strong>Standard price applies to 1 Sofa seat and up to 2 Chair seats. Additional selected seats use the higher
-        additional-seat price. 18% GST extra.</strong>
-        <br />
-        Sofa Row 1 and Sofa Row 5 are already booked and shown in grey.
-      </p>
+    <div className={styles.pricingSection}>
+      <div className={styles.pricingHeader}>
+        <h2>Choose Your Seat in the Mehfil</h2>
+        <p>Every seat brings you closer to the story. Prices are per seat, exclusive of 18% GST.</p>
+      </div>
+      <div className={styles.priceGrid}>
+        <PriceCard tone="platinumCard" title="Sofa - Platinum" sub="Rows 2, 3, 4 · Most premium" standard={9000} extra={11000} swatchClass="legendplatinum" />
+        <PriceCard tone="goldCard" title="Sofa - Gold" sub="Rows 5, 6, 7, 8 · Premium" standard={6000} extra={7500} swatchClass="legendgold" />
+        <PriceCard tone="groundCard" title="Chair - Ground Floor" sub="Prime chair seating" standard={999} extra={1199} swatchClass="legendground" />
+        <PriceCard tone="balconyCard" title="Chair - First Floor" sub="First-floor chair seating" standard={699} extra={899} swatchClass="legendbalcony" />
+      </div>
+      <p className={styles.preBookedNote}>Sofa Row 1 and Sofa Row 5 are already booked and shown in grey.</p>
     </div>
   );
 }
@@ -419,41 +502,44 @@ function Legend({ color, text }) {
   );
 }
 
-function OrderSummary({ selectedSeats, totals }) {
+function OrderSummary({ totals }) {
   return (
-    <table className={styles.summaryTable}>
-      <thead>
-        <tr>
-          <th>Seat</th>
-          <th>Category</th>
-          <th>Base Price</th>
-        </tr>
-      </thead>
-      <tbody>
-        {totals.items.map((seat) => (
-          <tr key={seat.id}>
-            <td>{seat.id}</td>
-            <td>
-              {getSeatCategory(seat.cat)} <small>({seat.priceLabel})</small>
-            </td>
-            <td>{formatMoney(seat.chargedPrice)}</td>
+    <div className={styles.orderSummaryCard}>
+      <h3>Order Summary</h3>
+      <table className={styles.summaryTable}>
+        <thead>
+          <tr>
+            <th>Seat</th>
+            <th>Category</th>
+            <th>Base Price</th>
           </tr>
-        ))}
-      </tbody>
-      <tfoot>
-        <tr className={styles.gstRow}>
-          <td colSpan="2">Subtotal</td>
-          <td>{formatMoney(totals.base)}</td>
-        </tr>
-        <tr className={styles.gstRow}>
-          <td colSpan="2">GST @ 18%</td>
-          <td>{formatMoney(totals.gst)}</td>
-        </tr>
-        <tr className={styles.totalRow}>
-          <td colSpan="2">Total Payable (incl. GST)</td>
-          <td>{formatMoney(totals.total)}</td>
-        </tr>
-      </tfoot>
-    </table>
+        </thead>
+        <tbody>
+          {totals.items.map((seat) => (
+            <tr key={seat.id}>
+              <td>{seat.id}</td>
+              <td>
+                {getSeatCategory(seat.cat)} <small>({seat.priceLabel})</small>
+              </td>
+              <td>{formatMoney(seat.chargedPrice)}</td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr className={styles.gstRow}>
+            <td colSpan="2">Subtotal</td>
+            <td>{formatMoney(totals.base)}</td>
+          </tr>
+          <tr className={styles.gstRow}>
+            <td colSpan="2">GST @ 18%</td>
+            <td>{formatMoney(totals.gst)}</td>
+          </tr>
+          <tr className={styles.totalRow}>
+            <td colSpan="2">Total Payable (incl. GST)</td>
+            <td>{formatMoney(totals.total)}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
   );
 }

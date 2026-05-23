@@ -39,6 +39,11 @@ const bookingSchema = new mongoose.Schema(
         message: "At least one seat is required",
       },
     },
+    paymentMethod: {
+      type: String,
+      enum: ["upi", "imps", "cash"],
+      default: "upi",
+    },
     baseAmount: {
       type: Number,
       required: true,
@@ -69,11 +74,11 @@ const bookingSchema = new mongoose.Schema(
     },
     screenshot: {
       type: String,
-      required: true,
+      default: "",
     },
     screenshotPublicId: {
       type: String,
-      required: true,
+      default: "",
     },
     status: {
       type: String,

@@ -153,12 +153,18 @@ export default function AdminDashboard() {
                       <br />
                       <small>
                         Base {formatMoney(booking.baseAmount)} + GST {formatMoney(booking.gst)}
+                        <br />
+                        Method {(booking.paymentMethod || "upi").toUpperCase()}
                       </small>
                     </td>
                     <td>
-                      <button className={styles.thumbButton} onClick={() => setModalSrc(booking.screenshot)}>
-                        <img className={styles.thumb} src={booking.screenshot} alt="Payment Screenshot" />
-                      </button>
+                      {booking.screenshot ? (
+                        <button className={styles.thumbButton} onClick={() => setModalSrc(booking.screenshot)}>
+                          <img className={styles.thumb} src={booking.screenshot} alt="Payment Screenshot" />
+                        </button>
+                      ) : (
+                        <span className={styles.noProof}>Cash</span>
+                      )}
                     </td>
                     <td>
                       <span className={`${styles.badge} ${styles[`badge${booking.status}`]}`}>{booking.status}</span>
