@@ -55,18 +55,31 @@
   letter-spacing: 0.5px;
 }
 
-.eventMeta {
-  text-align: right;
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.eventMeta h1 {
-  font-size: 1.15rem;
-  margin-bottom: 2px;
+.headerActionLink,
+.headerLogout {
+  border: 1px solid rgba(255, 248, 231, 0.74);
+  border-radius: 6px;
+  background: transparent;
+  color: white;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 10px 16px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
 }
 
-.eventMeta p {
-  font-size: 0.82rem;
-  opacity: 0.9;
+.headerActionLink:hover,
+.headerLogout:hover {
+  border-color: var(--gold-2);
+  background: rgba(255, 248, 231, 0.12);
 }
 
 .container {
@@ -251,8 +264,8 @@
 
 .sofaRows {
   gap: 8px;
-  margin-bottom: 20px;
-  min-width: 620px;
+  width: max-content;
+  margin: 0 auto 4px;
   padding: 22px;
 }
 
@@ -405,10 +418,46 @@
   flex-shrink: 0;
 }
 
+.sofaMapScroll,
 .pdfMapScroll {
   width: 100%;
   overflow-x: auto;
-  padding: 10px 0 18px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold) rgba(255, 252, 242, 0.88);
+}
+
+.sofaMapScroll {
+  padding: 0 0 18px;
+  margin-bottom: 2px;
+}
+
+.pdfMapScroll {
+  padding: 42px 0 18px;
+}
+
+.sofaMapScroll::-webkit-scrollbar,
+.pdfMapScroll::-webkit-scrollbar {
+  height: 14px;
+}
+
+.sofaMapScroll::-webkit-scrollbar-track,
+.pdfMapScroll::-webkit-scrollbar-track {
+  background: linear-gradient(90deg, rgba(255, 252, 242, 0.9), rgba(248, 239, 215, 0.96));
+  border: 1px solid rgba(197, 160, 89, 0.34);
+  border-radius: 999px;
+}
+
+.sofaMapScroll::-webkit-scrollbar-thumb,
+.pdfMapScroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, var(--maroon), var(--gold), var(--maroon));
+  border: 3px solid #fffcf2;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(107, 15, 26, 0.24);
+}
+
+.sofaMapScroll::-webkit-scrollbar-thumb:hover,
+.pdfMapScroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #5a0c16, var(--gold-2), #5a0c16);
 }
 
 .pdfSeatMap {
@@ -525,6 +574,22 @@
   margin-top: 4px;
   max-height: 60px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--maroon) rgba(255, 252, 242, 0.78);
+}
+
+.selectedTags::-webkit-scrollbar {
+  width: 8px;
+}
+
+.selectedTags::-webkit-scrollbar-track {
+  background: rgba(255, 252, 242, 0.75);
+  border-radius: 999px;
+}
+
+.selectedTags::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--gold), var(--maroon));
+  border-radius: 999px;
 }
 
 .tag {
@@ -809,23 +874,9 @@
     grid-template-columns: 1fr;
   }
 
-  .sofaRow {
-    grid-template-columns: 280px 44px 280px;
-  }
-
-  .sofaRows {
-    min-width: 560px;
-    padding: 18px;
-  }
-
   .seat {
     width: 24px;
     height: 24px;
-  }
-
-  .sofaRow .seat {
-    width: 40px;
-    height: 18px;
   }
 
   .chairRow .seat {
@@ -855,6 +906,7 @@
   --gold: #c5a059;
   --gold-2: #e6c77a;
   --gold-3: #8b7029;
+  --rose: #e31837;
   --ink: #2a1810;
   background:
     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><g fill='none' stroke='%23C5A059' stroke-width='0.6' opacity='0.10'><circle cx='80' cy='80' r='28'/><circle cx='80' cy='80' r='40'/><path d='M80 40 Q92 70 80 80 Q68 70 80 40 Z'/><path d='M120 80 Q90 92 80 80 Q90 68 120 80 Z'/><path d='M80 120 Q68 90 80 80 Q92 90 80 120 Z'/><path d='M40 80 Q70 68 80 80 Q70 92 40 80 Z'/></g></svg>"),
@@ -1291,6 +1343,12 @@
   background: linear-gradient(180deg, rgba(255, 252, 242, 0.97), rgba(248, 239, 215, 0.97));
   border-top: 3px solid var(--gold);
   box-shadow: 0 -8px 30px rgba(107, 15, 26, 0.18);
+  gap: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.bookingPanelHidden {
+  display: none;
 }
 
 .panelInfo small {
@@ -1299,6 +1357,70 @@
   color: var(--maroon);
   letter-spacing: 2px;
   font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.seatCounts {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.countPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #e3e8ef;
+  color: #444;
+}
+
+.sofaCount {
+  background: linear-gradient(135deg, #fffcf2, #f8efd7);
+  border-color: var(--gold);
+  color: var(--gold-3);
+}
+
+.chairCount {
+  background: linear-gradient(135deg, #fff0f0, #ffd9d9);
+  border-color: var(--rose);
+  color: var(--maroon);
+}
+
+.num {
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 999px;
+  padding: 0 7px;
+  font-size: 0.78rem;
+}
+
+.tag {
+  border-radius: 999px;
+  border: 0;
+  color: #fff;
+  padding: 5px 11px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.tagStd {
+  background: linear-gradient(135deg, #2e7d32, #43a047);
+}
+
+.tagExtra {
+  background: linear-gradient(135deg, var(--maroon), #b03040);
+}
+
+.bundleHint {
+  background: linear-gradient(135deg, #fffcf2, #f8efd7);
+  color: #5d4a2a;
+  border: 1px solid var(--gold);
+  font-family: inherit;
 }
 
 .total {
@@ -1516,7 +1638,7 @@
 
 .eventContactCard {
   max-width: 700px;
-  margin: 30px auto 20px;
+  margin: 64px auto 20px;
   padding: 24px 20px;
   background: linear-gradient(135deg, #fffcf2, #f8efd7);
   border: 1px solid rgba(197, 160, 89, 0.45);

@@ -1,0 +1,116 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(16, 8, 14, 0.58);
+  backdrop-filter: blur(8px);
+}
+
+.popup {
+  width: min(430px, 100%);
+  border: 1px solid rgba(197, 160, 89, 0.55);
+  border-radius: 14px;
+  background:
+    radial-gradient(340px 160px at 50% -70px, rgba(230, 199, 122, 0.24), transparent 70%),
+    linear-gradient(180deg, #fffcf2, #f8efd7);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.38), inset 0 0 0 1px rgba(255, 255, 255, 0.65);
+  color: #2a1810;
+  padding: 28px 24px 22px;
+  text-align: center;
+  transform: translateY(0);
+  animation: popIn 0.18s ease-out;
+}
+
+.icon {
+  width: 46px;
+  height: 46px;
+  margin: 0 auto 14px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8f1724, #6b0f1a);
+  color: #e6c77a;
+  font-size: 1.35rem;
+  font-weight: 900;
+  box-shadow: 0 10px 24px rgba(107, 15, 26, 0.28);
+}
+
+.success .icon {
+  background: linear-gradient(135deg, #2e7d32, #43a047);
+  color: #fff;
+}
+
+.danger .icon {
+  background: linear-gradient(135deg, #c62828, #6b0f1a);
+  color: #fff;
+}
+
+.popup h2 {
+  color: #6b0f1a;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.45rem;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+}
+
+.popup p {
+  color: #5d4a2a;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  white-space: pre-line;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.confirm,
+.cancel {
+  min-width: 108px;
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+.confirm {
+  border: 0;
+  background: linear-gradient(135deg, #8f1724, #6b0f1a);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(107, 15, 26, 0.24);
+}
+
+.cancel {
+  border: 2px solid #6b0f1a;
+  background: transparent;
+  color: #6b0f1a;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .confirm,
+  .cancel {
+    width: 100%;
+  }
+}

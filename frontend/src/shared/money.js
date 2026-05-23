@@ -1,14 +1,25 @@
 import { GST_RATE } from "./seatMap";
 
+export const NO_DISCOUNT_ALLOWANCE = { category: "none", sofaRemaining: 0, chairRemaining: 0 };
+
 export function formatMoney(value) {
   return `₹${Number(value || 0).toLocaleString("en-IN")}`;
 }
 
-export function calculateTotals(selectedSeats) {
-  const firstSeat = selectedSeats.find((seat) => isSofaSeat(seat) || isChairSeat(seat));
+export function hasDiscountForCategory(cat, discountAllowance) {
+  if (discountAllowance?.category === "choice") return true;
+  if (discountAllowance?.category === "sofa") return isSofaCategory(cat) && discountAllowance.sofaRemaining > 0;
+  return discountAllowance?.category === "chair" && isChairCategory(cat) && discountAllowance.chairRemaining > 0;
+}
+
+export function calculateTotals(selectedSeats, discountAllowance = NO_DISCOUNT_ALLOWANCE) {
+  const allowanceCategory = discountAllowance?.category || "none";
+  const firstSeat =
+    allowanceCategory === "choice" && selectedSeats.find((seat) => isSofaSeat(seat) || isChairSeat(seat));
   const firstType = firstSeat ? (isSofaSeat(firstSeat) ? "sofa" : "chair") : null;
-  let sofaDiscountedLeft = firstType === "sofa" ? 1 : 0;
-  let chairDiscountedLeft = firstType === "chair" ? 2 : 0;
+  const activeCategory = allowanceCategory === "choice" ? firstType : allowanceCategory;
+  let sofaDiscountedLeft = activeCategory === "sofa" ? (discountAllowance?.sofaRemaining || 0) : 0;
+  let chairDiscountedLeft = activeCategory === "chair" ? (discountAllowance?.chairRemaining || 0) : 0;
 
   let sofaCount = 0;
   let chairCount = 0;
@@ -46,21 +57,24 @@ export function calculateTotals(selectedSeats) {
     base,
     gst,
     total: base + gst,
-    bundle: firstType,
+    bundle: activeCategory === "none" ? null : activeCategory,
     sofaCount,
     chairCount,
   };
 }
 
 function isSofaSeat(seat) {
-  return seat?.cat === "platinum" || seat?.cat === "gold";
+  return isSofaCategory(seat?.cat);
 }
 
 function isChairSeat(seat) {
-  return (
-    seat?.cat === "chair-ground" ||
-    seat?.cat === "chair-balcony" ||
-    seat?.cat === "chairGround" ||
-    seat?.cat === "chairBalcony"
-  );
+  return isChairCategory(seat?.cat);
+}
+
+function isSofaCategory(cat) {
+  return cat === "platinum" || cat === "gold";
+}
+
+function isChairCategory(cat) {
+  return cat === "chair-ground" || cat === "chair-balcony" || cat === "chairGround" || cat === "chairBalcony";
 }

@@ -3,23 +3,57 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { fetchAdminBookings, fetchAdminStats, resetBookings, updateBookingStatus } from "@/services/api";
+import {
+  fetchAdminBookings,
+  fetchAdminStats,
+  fetchDiscountSetting,
+  resetBookings,
+  updateBookingStatus,
+  updateDiscountSetting,
+} from "@/services/api";
 import { clearAdminToken, getAdminToken } from "@/shared/adminAuth";
 import { formatMoney } from "@/shared/money";
+import AppPopup from "@/shared/AppPopup";
 import styles from "./admin.module.css";
+
+const EXPORT_HEADERS = [
+  "Booking ID",
+  "Customer Name",
+  "Email",
+  "Phone",
+  "GST No.",
+  "Seats",
+  "Base Amount",
+  "GST",
+  "Total",
+  "Payment Method",
+  "Status",
+  "Date",
+  "Price Breakup",
+];
 
 export default function AdminDashboard() {
   const router = useRouter();
   const [bookings, setBookings] = useState([]);
   const [stats, setStats] = useState(null);
   const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
   const [modalSrc, setModalSrc] = useState("");
+  const [resetPopupOpen, setResetPopupOpen] = useState(false);
+  const [settingsPopup, setSettingsPopup] = useState(null);
+  const [discountEnabled, setDiscountEnabled] = useState(true);
+  const [savingDiscount, setSavingDiscount] = useState(false);
 
   const loadData = useCallback(async (adminToken) => {
     try {
-      const [bookingData, statsData] = await Promise.all([fetchAdminBookings(adminToken), fetchAdminStats(adminToken)]);
+      const [bookingData, statsData, discountSetting] = await Promise.all([
+        fetchAdminBookings(adminToken),
+        fetchAdminStats(adminToken),
+        fetchDiscountSetting(adminToken),
+      ]);
       setBookings(bookingData);
       setStats(statsData);
+      setDiscountEnabled(discountSetting.discountEnabled);
     } catch (error) {
       clearAdminToken();
       router.push("/admin/login");
@@ -42,10 +76,24 @@ export default function AdminDashboard() {
   }
 
   async function clearAllData() {
-    if (!confirm("WARNING: This will delete ALL bookings and release ALL seats. Are you sure?")) return;
     const adminToken = getAdminToken();
     await resetBookings(adminToken);
+    setResetPopupOpen(false);
     await loadData(adminToken);
+  }
+
+  async function toggleDiscount(event) {
+    const nextValue = event.target.checked;
+    const adminToken = getAdminToken();
+    setSavingDiscount(true);
+    try {
+      const setting = await updateDiscountSetting(nextValue, adminToken);
+      setDiscountEnabled(setting.discountEnabled);
+    } catch (error) {
+      setSettingsPopup({ title: "Unable to update discount", message: error.message, type: "danger" });
+    } finally {
+      setSavingDiscount(false);
+    }
   }
 
   function logout() {
@@ -54,9 +102,66 @@ export default function AdminDashboard() {
   }
 
   const filteredBookings = useMemo(() => {
-    const filtered = filter === "all" ? bookings : bookings.filter((booking) => booking.status === filter);
+    const query = search.trim().toLowerCase();
+    const filtered = (filter === "all" ? bookings : bookings.filter((booking) => booking.status === filter)).filter(
+      (booking) => {
+        if (!query) return true;
+        return [
+          booking.id,
+          booking.name,
+          booking.email,
+          booking.phone,
+          booking.gstNumber,
+          booking.paymentMethod,
+          booking.status,
+          ...(booking.seats || []),
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(query);
+      },
+    );
     return [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
-  }, [bookings, filter]);
+  }, [bookings, filter, search]);
+
+  function exportExcel() {
+    const rows = buildExportRows(filteredBookings);
+    const html = `
+      <html>
+        <head><meta charset="UTF-8" /></head>
+        <body>
+          <table border="1">
+            <thead><tr>${EXPORT_HEADERS.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}</tr></thead>
+            <tbody>
+              ${rows
+                .map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join("")}</tr>`)
+                .join("")}
+            </tbody>
+          </table>
+        </body>
+      </html>`;
+    downloadFile(`bni-kutch-bookings-${getDateStamp()}.xls`, html, "application/vnd.ms-excel;charset=utf-8");
+  }
+
+  function exportCsv() {
+    const rows = [EXPORT_HEADERS, ...buildExportRows(filteredBookings)];
+    const csv = rows.map((row) => row.map(csvCell).join(",")).join("\r\n");
+    downloadFile(`bni-kutch-bookings-${getDateStamp()}.csv`, csv, "text/csv;charset=utf-8");
+  }
+
+  function printReport() {
+    window.print();
+  }
+
+  async function refreshData() {
+    const adminToken = getAdminToken();
+    if (!adminToken) {
+      router.push("/admin/login");
+      return;
+    }
+    await loadData(adminToken);
+  }
 
   return (
     <main className={styles.page}>
@@ -72,6 +177,28 @@ export default function AdminDashboard() {
       </header>
 
       <div className={styles.container}>
+        <section className={styles.discountControl}>
+          <div>
+            <h2>BNI Member Discount</h2>
+            <p>
+              {discountEnabled
+                ? "Enabled: eligible BNI members receive discounted pricing."
+                : "Disabled: standard pricing applies to every user."}
+            </p>
+          </div>
+          <label className={styles.switch}>
+            <input
+              type="checkbox"
+              checked={discountEnabled}
+              onChange={toggleDiscount}
+              disabled={savingDiscount}
+              aria-label="Enable BNI member discount"
+            />
+            <span className={styles.slider} />
+            <strong>{savingDiscount ? "Saving..." : discountEnabled ? "On" : "Off"}</strong>
+          </label>
+        </section>
+
         <div className={styles.stats}>
           {[
             ["Total Bookings", stats?.totalBookings || 0],
@@ -98,18 +225,37 @@ export default function AdminDashboard() {
               {value[0].toUpperCase() + value.slice(1)}
             </button>
           ))}
-          <button className={`${styles.filterBtn} ${styles.resetBtn}`} onClick={clearAllData}>
+          <input
+            className={styles.searchInput}
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search booking, name, phone, seat..."
+          />
+          <button className={`${styles.filterBtn} ${styles.exportBtn}`} onClick={exportExcel} disabled={!filteredBookings.length}>
+            Export Excel
+          </button>
+          <button className={`${styles.filterBtn} ${styles.exportBtn}`} onClick={exportCsv} disabled={!filteredBookings.length}>
+            Export CSV
+          </button>
+          <button className={`${styles.filterBtn} ${styles.printBtn}`} onClick={printReport} disabled={!filteredBookings.length}>
+            Print
+          </button>
+          <button className={`${styles.filterBtn} ${styles.refreshBtn}`} onClick={refreshData}>
+            Refresh
+          </button>
+          <button className={`${styles.filterBtn} ${styles.resetBtn}`} onClick={() => setResetPopupOpen(true)}>
             Reset All Data
           </button>
         </div>
 
-        <div className={styles.tableWrap}>
-          {!filteredBookings.length ? (
-            <div className={styles.empty}>
-              <h3>No bookings found</h3>
-              <p>Bookings made on the main page will appear here.</p>
-            </div>
-          ) : (
+        {!filteredBookings.length ? (
+          <div className={styles.empty}>
+            <h3>No bookings found</h3>
+            <p>Bookings made on the main page will appear here.</p>
+          </div>
+        ) : (
+          <>
+            <div className={styles.tableWrap}>
             <table>
               <thead>
                 <tr>
@@ -158,13 +304,7 @@ export default function AdminDashboard() {
                       </small>
                     </td>
                     <td>
-                      {booking.screenshot ? (
-                        <button className={styles.thumbButton} onClick={() => setModalSrc(booking.screenshot)}>
-                          <img className={styles.thumb} src={booking.screenshot} alt="Payment Screenshot" />
-                        </button>
-                      ) : (
-                        <span className={styles.noProof}>Cash</span>
-                      )}
+                      <PaymentProof booking={booking} onOpen={setModalSrc} />
                     </td>
                     <td>
                       <span className={`${styles.badge} ${styles[`badge${booking.status}`]}`}>{booking.status}</span>
@@ -177,8 +317,69 @@ export default function AdminDashboard() {
                 ))}
               </tbody>
             </table>
-          )}
-        </div>
+            </div>
+
+            <div className={styles.mobileBookings}>
+              {filteredBookings.map((booking) => (
+                <article className={styles.mobileBooking} key={booking.id}>
+                  <div className={styles.mobileBookingHead}>
+                    <div>
+                      <strong>{booking.id}</strong>
+                      <small>{new Date(booking.date).toLocaleString("en-IN")}</small>
+                    </div>
+                    <span className={`${styles.badge} ${styles[`badge${booking.status}`]}`}>{booking.status}</span>
+                  </div>
+
+                  <div className={styles.mobileCustomer}>
+                    <div>
+                      <span>Customer</span>
+                      <strong>{booking.name}</strong>
+                      <small>{booking.email}</small>
+                    </div>
+                    <div className={styles.mobileTotal}>
+                      <span>Total</span>
+                      <strong>{formatMoney(booking.total)}</strong>
+                    </div>
+                  </div>
+
+                  <div className={styles.mobileSeats}>
+                    <span>Seats</span>
+                    <div>
+                      {booking.seats.map((seat) => (
+                        <span className={styles.seatTag} key={seat}>
+                          {seat}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <dl className={styles.mobileDetails}>
+                    <div>
+                      <dt>GST No.</dt>
+                      <dd>{booking.gstNumber || "-"}</dd>
+                    </div>
+                    <div>
+                      <dt>Base + GST</dt>
+                      <dd>{formatMoney(booking.baseAmount)} + {formatMoney(booking.gst)}</dd>
+                    </div>
+                    <div>
+                      <dt>Payment</dt>
+                      <dd>{(booking.paymentMethod || "upi").toUpperCase()}</dd>
+                    </div>
+                    <div>
+                      <dt>Proof</dt>
+                      <dd><PaymentProof booking={booking} onOpen={setModalSrc} compact /></dd>
+                    </div>
+                  </dl>
+
+                  <div className={styles.mobileActions}>
+                    <ActionButtons booking={booking} onChange={changeStatus} />
+                  </div>
+                </article>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       {modalSrc && (
@@ -186,6 +387,24 @@ export default function AdminDashboard() {
           <img src={modalSrc} alt="Payment Screenshot" />
         </button>
       )}
+
+      <AppPopup
+        open={resetPopupOpen}
+        title="Reset all bookings?"
+        message="This will delete all bookings and release all seats except the default blocked seats. This action cannot be undone."
+        type="danger"
+        confirmLabel="Reset Data"
+        cancelLabel="Cancel"
+        onConfirm={clearAllData}
+        onCancel={() => setResetPopupOpen(false)}
+      />
+      <AppPopup
+        open={Boolean(settingsPopup)}
+        title={settingsPopup?.title}
+        message={settingsPopup?.message}
+        type={settingsPopup?.type}
+        onConfirm={() => setSettingsPopup(null)}
+      />
     </main>
   );
 }
@@ -217,4 +436,60 @@ function ActionButtons({ booking, onChange }) {
       Verify
     </button>
   );
+}
+
+function PaymentProof({ booking, onOpen, compact = false }) {
+  if (!booking.screenshot) return <span className={styles.noProof}>Cash</span>;
+
+  return (
+    <button type="button" className={`${styles.thumbButton} ${compact ? styles.compactProof : ""}`} onClick={() => onOpen(booking.screenshot)}>
+      {compact ? "View" : <img className={styles.thumb} src={booking.screenshot} alt="Payment Screenshot" />}
+    </button>
+  );
+}
+
+function buildExportRows(bookings) {
+  return bookings.map((booking) => [
+    booking.id || "",
+    booking.name || "",
+    booking.email || "",
+    booking.phone || "",
+    booking.gstNumber || "",
+    (booking.seats || []).join(", "),
+    booking.baseAmount ?? "",
+    booking.gst ?? "",
+    booking.total ?? "",
+    (booking.paymentMethod || "upi").toUpperCase(),
+    booking.status || "",
+    booking.date ? new Date(booking.date).toLocaleString("en-IN") : "",
+    (booking.priceBreakup || []).map((item) => `${item.id}: ${item.priceType} ${item.price}`).join(" | "),
+  ]);
+}
+
+function downloadFile(filename, content, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function csvCell(value) {
+  return `"${String(value ?? "").replace(/"/g, '""')}"`;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function getDateStamp() {
+  return new Date().toISOString().slice(0, 10);
 }

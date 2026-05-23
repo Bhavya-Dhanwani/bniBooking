@@ -41,6 +41,20 @@ export function fetchAdminStats(token) {
   });
 }
 
+export function fetchDiscountSetting(token) {
+  return request("/admin/settings/discount", {
+    headers: { "x-admin-token": token },
+  });
+}
+
+export function updateDiscountSetting(discountEnabled, token) {
+  return request("/admin/settings/discount", {
+    method: "PATCH",
+    headers: { "x-admin-token": token },
+    body: JSON.stringify({ discountEnabled }),
+  });
+}
+
 export function updateBookingStatus(id, status, token) {
   return request(`/admin/bookings/${id}/status`, {
     method: "PATCH",
@@ -54,4 +68,32 @@ export function resetBookings(token) {
     method: "DELETE",
     headers: { "x-admin-token": token },
   });
+}
+
+export function signupUser(payload) {
+  return request("/auth/signup", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function loginUser(payload) {
+  return request("/auth/login", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function logoutUser() {
+  return request("/auth/logout", {
+    method: "POST",
+  });
+}
+
+export function fetchCurrentUser() {
+  return request("/auth/me");
+}
+
+export function fetchUserBookings() {
+  return request("/user/bookings");
 }

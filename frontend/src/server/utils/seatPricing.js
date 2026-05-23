@@ -4,12 +4,16 @@ export function isSofaSeat(seatId) {
   return /^S[1-8]-/.test(seatId);
 }
 
-export function calculateTotals(seats) {
+export function calculateTotals(seats, discountAllowance) {
   const seatDetails = seats.map((seatId) => ({ seatId, seat: getSeatById(seatId) }));
-  const firstSeat = seatDetails.find(({ seat }) => seat && (isSofaCategory(seat.cat) || isChairCategory(seat.cat)));
+  const allowanceCategory = discountAllowance?.category || "none";
+  const firstSeat = allowanceCategory === "choice"
+    ? seatDetails.find(({ seat }) => seat && (isSofaCategory(seat.cat) || isChairCategory(seat.cat)))
+    : null;
   const firstType = firstSeat ? (isSofaCategory(firstSeat.seat.cat) ? "sofa" : "chair") : null;
-  let sofaDiscountedLeft = firstType === "sofa" ? 1 : 0;
-  let chairDiscountedLeft = firstType === "chair" ? 2 : 0;
+  const activeCategory = allowanceCategory === "choice" ? firstType : allowanceCategory;
+  let sofaDiscountedLeft = activeCategory === "sofa" ? (discountAllowance?.sofaRemaining || 0) : 0;
+  let chairDiscountedLeft = activeCategory === "chair" ? (discountAllowance?.chairRemaining || 0) : 0;
 
   let sofaCount = 0;
   let chairCount = 0;
@@ -50,7 +54,7 @@ export function calculateTotals(seats) {
     baseAmount,
     gst,
     total: baseAmount + gst,
-    bundle: firstType,
+    bundle: activeCategory === "none" ? null : activeCategory,
     sofaCount,
     chairCount,
   };

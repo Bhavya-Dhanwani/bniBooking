@@ -4,12 +4,14 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { fetchAdminStats } from "@/services/api";
 import { setAdminToken } from "@/shared/adminAuth";
+import AppPopup from "@/shared/AppPopup";
 import styles from "./admin.module.css";
 
 export default function AdminLogin() {
   const router = useRouter();
   const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
+  const [popup, setPopup] = useState(null);
 
   async function login(event) {
     event.preventDefault();
@@ -19,7 +21,7 @@ export default function AdminLogin() {
       setAdminToken(token);
       router.push("/admin");
     } catch (error) {
-      alert(error.message);
+      setPopup({ title: "Login failed", message: error.message, type: "danger" });
     } finally {
       setLoading(false);
     }
@@ -41,6 +43,13 @@ export default function AdminLogin() {
           {loading ? "Checking..." : "Open Admin"}
         </button>
       </form>
+      <AppPopup
+        open={Boolean(popup)}
+        title={popup?.title}
+        message={popup?.message}
+        type={popup?.type}
+        onConfirm={() => setPopup(null)}
+      />
     </main>
   );
 }

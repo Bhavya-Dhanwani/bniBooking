@@ -22,8 +22,14 @@ const bookingSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
-      required: true,
       trim: true,
+      default: "",
+      index: true,
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
       index: true,
     },
     gstNumber: {
