@@ -6,10 +6,10 @@ export const runtime = "nodejs";
 
 export async function GET(request) {
   try {
-    requireAdmin(request);
+    const access = await requireAdmin(request);
     await connectDb();
 
-    return json(await getStats());
+    return json({ ...(await getStats()), access });
   } catch (error) {
     return errorResponse(error);
   }

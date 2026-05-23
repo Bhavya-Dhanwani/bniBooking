@@ -55,6 +55,14 @@ export function updateDiscountSetting(discountEnabled, token) {
   });
 }
 
+export function createNormalAdmin(displayName, password, token) {
+  return request("/admin/access", {
+    method: "POST",
+    headers: { "x-admin-token": token },
+    body: JSON.stringify({ displayName, password }),
+  });
+}
+
 export function updateBookingStatus(id, status, token) {
   return request(`/admin/bookings/${id}/status`, {
     method: "PATCH",

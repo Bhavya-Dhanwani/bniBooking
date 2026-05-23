@@ -1,4 +1,8 @@
 import { NextResponse } from "next/server";
+import { createHash } from "crypto";
+import bcrypt from "bcryptjs";
+import { connectDb } from "@/server/db";
+import AdminAccess from "@/server/models/AdminAccess";
 
 export function json(data, status = 200) {
   return NextResponse.json(data, { status });
@@ -21,11 +25,57 @@ export function createError(message, statusCode = 400) {
   return error;
 }
 
-export function requireAdmin(request) {
-  const configuredToken = process.env.ADMIN_TOKEN || "bni-admin";
-  const requestToken = request.headers.get("x-admin-token");
+export function getAdminTokenDigest(token) {
+  return createHash("sha256").update(token).digest("hex");
+}
 
-  if (!requestToken || requestToken !== configuredToken) {
+export async function requireAdmin(request, { ownerOnly = false } = {}) {
+  const superAdminPassword = process.env.SUPERADMIN_PASSWORD || process.env.ADMIN_TOKEN || "bni-admin";
+  const requestPassword = request.headers.get("x-admin-token");
+
+  if (!requestPassword) {
     throw createError("Admin access required", 401);
   }
+
+  if (requestPassword === superAdminPassword) {
+    return {
+      role: "superadmin",
+      displayName: "Super Admin",
+      canVerify: true,
+      canManage: true,
+    };
+  }
+
+  await connectDb();
+  let account = await AdminAccess.findOne({
+    tokenDigest: getAdminTokenDigest(requestPassword),
+    active: true,
+  }).select("displayName role passwordHash");
+
+  if (!account) {
+    const accounts = await AdminAccess.find({ active: true, passwordHash: { $exists: true, $ne: "" } }).select(
+      "+passwordHash displayName role",
+    );
+    for (const candidate of accounts) {
+      if (await bcrypt.compare(requestPassword, candidate.passwordHash)) {
+        account = candidate;
+        break;
+      }
+    }
+  }
+
+  if (!account) {
+    throw createError("Admin access required", 401);
+  }
+
+  if (ownerOnly) {
+    throw createError("Only the Super Admin can perform this action.", 403);
+  }
+
+  return {
+    role: account.role,
+    displayName: account.displayName,
+    canVerify: false,
+    canManage: false,
+  };
 }

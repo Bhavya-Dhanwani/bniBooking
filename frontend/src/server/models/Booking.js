@@ -102,6 +102,31 @@ const bookingSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    checkedInCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    checkInLogs: {
+      type: [
+        {
+          count: {
+            type: Number,
+            required: true,
+            min: 1,
+          },
+          checkedInAt: {
+            type: Date,
+            default: Date.now,
+          },
+          checkedInBy: {
+            type: String,
+            default: "Admin",
+          },
+        },
+      ],
+      default: [],
+    },
   },
   {
     timestamps: true,

@@ -8,7 +8,7 @@ export function proxy(request) {
   const token = request.cookies.get(COOKIE_NAME)?.value;
   const isAuthenticated = Boolean(verifySessionToken(token));
 
-  if (PUBLIC_PAGES.has(pathname)) {
+  if (PUBLIC_PAGES.has(pathname) || pathname.startsWith("/admin") || pathname.startsWith("/verify")) {
     return NextResponse.next();
   }
 

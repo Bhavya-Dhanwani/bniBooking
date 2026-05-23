@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 
 export async function PATCH(request, { params }) {
   try {
-    requireAdmin(request);
+    await requireAdmin(request, { ownerOnly: true });
     await connectDb();
 
     const { id } = await params;
@@ -21,6 +21,9 @@ export async function PATCH(request, { params }) {
 
     const previousBooking = await Booking.findOne({ bookingId: id });
     if (!previousBooking) throw createError("Booking not found.", 404);
+    if (previousBooking.status === "rejected" && status !== "rejected") {
+      throw createError("Rejected bookings cannot be verified again.", 409);
+    }
 
     const update = { status };
     if (status === "confirmed" && !previousBooking.checkInToken) {

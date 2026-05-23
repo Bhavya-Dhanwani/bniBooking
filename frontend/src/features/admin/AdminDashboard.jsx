@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  createNormalAdmin,
   fetchAdminBookings,
   fetchAdminStats,
   fetchDiscountSetting,
@@ -43,6 +44,12 @@ export default function AdminDashboard() {
   const [settingsPopup, setSettingsPopup] = useState(null);
   const [discountEnabled, setDiscountEnabled] = useState(true);
   const [savingDiscount, setSavingDiscount] = useState(false);
+  const [access, setAccess] = useState(null);
+  const [addAdminOpen, setAddAdminOpen] = useState(false);
+  const [newAdminName, setNewAdminName] = useState("");
+  const [newAdminPassword, setNewAdminPassword] = useState("");
+  const [newAdminResult, setNewAdminResult] = useState(null);
+  const [creatingAdmin, setCreatingAdmin] = useState(false);
 
   const loadData = useCallback(async (adminToken) => {
     try {
@@ -54,6 +61,7 @@ export default function AdminDashboard() {
       setBookings(bookingData);
       setStats(statsData);
       setDiscountEnabled(discountSetting.discountEnabled);
+      setAccess(statsData.access);
     } catch (error) {
       clearAdminToken();
       router.push("/admin/login");
@@ -68,6 +76,8 @@ export default function AdminDashboard() {
     }
     Promise.resolve().then(() => loadData(storedToken));
   }, [loadData, router]);
+
+  const canManage = Boolean(access?.canManage);
 
   async function changeStatus(id, status) {
     const adminToken = getAdminToken();
@@ -94,6 +104,29 @@ export default function AdminDashboard() {
     } finally {
       setSavingDiscount(false);
     }
+  }
+
+  async function addNormalAdmin(event) {
+    event.preventDefault();
+    const adminToken = getAdminToken();
+    setCreatingAdmin(true);
+    try {
+      const result = await createNormalAdmin(newAdminName, newAdminPassword, adminToken);
+      setNewAdminResult(result);
+      setNewAdminName("");
+      setNewAdminPassword("");
+    } catch (error) {
+      setSettingsPopup({ title: "Unable to add admin", message: error.message, type: "danger" });
+    } finally {
+      setCreatingAdmin(false);
+    }
+  }
+
+  function closeAddAdmin() {
+    setAddAdminOpen(false);
+    setNewAdminName("");
+    setNewAdminPassword("");
+    setNewAdminResult(null);
   }
 
   function logout() {
@@ -168,9 +201,19 @@ export default function AdminDashboard() {
       <header className={styles.header}>
         <div className={styles.brand}>
           <img src="/bni-logo.jpg" alt="BNI Kutch" />
-          <div>Admin Verification</div>
+          <div>{!access ? "Admin Dashboard" : canManage ? "Super Admin" : "Admin Data Access"}</div>
         </div>
         <div className={styles.headerLinks}>
+          {access && (
+            <Link href="/admin/scanner" className={styles.addAdminHeaderBtn}>
+              QR Scanner
+            </Link>
+          )}
+          {canManage && (
+            <button className={styles.addAdminHeaderBtn} type="button" onClick={() => setAddAdminOpen(true)}>
+              Add Admin
+            </button>
+          )}
           <Link href="/">Back to Booking</Link>
           <button onClick={logout}>Logout</button>
         </div>
@@ -186,17 +229,23 @@ export default function AdminDashboard() {
                 : "Disabled: standard pricing applies to every user."}
             </p>
           </div>
-          <label className={styles.switch}>
-            <input
-              type="checkbox"
-              checked={discountEnabled}
-              onChange={toggleDiscount}
-              disabled={savingDiscount}
-              aria-label="Enable BNI member discount"
-            />
-            <span className={styles.slider} />
-            <strong>{savingDiscount ? "Saving..." : discountEnabled ? "On" : "Off"}</strong>
-          </label>
+          {!access ? (
+            <span className={styles.viewerBadge}>Loading</span>
+          ) : canManage ? (
+            <label className={styles.switch}>
+              <input
+                type="checkbox"
+                checked={discountEnabled}
+                onChange={toggleDiscount}
+                disabled={savingDiscount}
+                aria-label="Enable BNI member discount"
+              />
+              <span className={styles.slider} />
+              <strong>{savingDiscount ? "Saving..." : discountEnabled ? "On" : "Off"}</strong>
+            </label>
+          ) : (
+            <span className={styles.viewerBadge}>Data access</span>
+          )}
         </section>
 
         <div className={styles.stats}>
@@ -243,9 +292,11 @@ export default function AdminDashboard() {
           <button className={`${styles.filterBtn} ${styles.refreshBtn}`} onClick={refreshData}>
             Refresh
           </button>
-          <button className={`${styles.filterBtn} ${styles.resetBtn}`} onClick={() => setResetPopupOpen(true)}>
-            Reset All Data
-          </button>
+          {canManage && (
+            <button className={`${styles.filterBtn} ${styles.resetBtn}`} onClick={() => setResetPopupOpen(true)}>
+              Reset All Data
+            </button>
+          )}
         </div>
 
         {!filteredBookings.length ? (
@@ -311,7 +362,7 @@ export default function AdminDashboard() {
                     </td>
                     <td>{new Date(booking.date).toLocaleDateString("en-IN")}</td>
                     <td>
-                      <ActionButtons booking={booking} onChange={changeStatus} />
+                      <ActionButtons booking={booking} onChange={changeStatus} canVerify={canManage} />
                     </td>
                   </tr>
                 ))}
@@ -373,7 +424,7 @@ export default function AdminDashboard() {
                   </dl>
 
                   <div className={styles.mobileActions}>
-                    <ActionButtons booking={booking} onChange={changeStatus} />
+                    <ActionButtons booking={booking} onChange={changeStatus} canVerify={canManage} />
                   </div>
                 </article>
               ))}
@@ -386,6 +437,53 @@ export default function AdminDashboard() {
         <button className={styles.modal} onClick={() => setModalSrc("")}>
           <img src={modalSrc} alt="Payment Screenshot" />
         </button>
+      )}
+
+      {addAdminOpen && (
+        <div className={styles.accessModalBackdrop} role="presentation" onClick={closeAddAdmin}>
+          <form className={styles.accessModal} onSubmit={addNormalAdmin} onClick={(event) => event.stopPropagation()}>
+            <div className={styles.accessModalHeader}>
+              <h2>Add Admin</h2>
+              <button className={styles.accessModalClose} type="button" onClick={closeAddAdmin} aria-label="Close">
+                &times;
+              </button>
+            </div>
+            <p>Normal admins can see booking data and export reports, but cannot verify, reject, reset, or change discounts.</p>
+            {!newAdminResult ? (
+              <>
+                <label htmlFor="newAdminName">Admin Name</label>
+                <input
+                  id="newAdminName"
+                  value={newAdminName}
+                  onChange={(event) => setNewAdminName(event.target.value)}
+                  placeholder="Enter admin name"
+                  minLength={2}
+                  maxLength={80}
+                  required
+                />
+                <label htmlFor="newAdminPassword">Password</label>
+                <input
+                  id="newAdminPassword"
+                  type="password"
+                  value={newAdminPassword}
+                  onChange={(event) => setNewAdminPassword(event.target.value)}
+                  placeholder="Set admin password"
+                  minLength={8}
+                  required
+                />
+                <button className={`${styles.btn} ${styles.btnConfirm} ${styles.accessCreateBtn}`} disabled={creatingAdmin}>
+                  {creatingAdmin ? "Creating..." : "Create Admin"}
+                </button>
+              </>
+            ) : (
+              <div className={styles.accessResult}>
+                <strong>{newAdminResult.displayName}</strong>
+                <span>Normal Admin Created</span>
+                <p>They can log in using the password you assigned.</p>
+              </div>
+            )}
+          </form>
+        </div>
       )}
 
       <AppPopup
@@ -409,7 +507,11 @@ export default function AdminDashboard() {
   );
 }
 
-function ActionButtons({ booking, onChange }) {
+function ActionButtons({ booking, onChange, canVerify }) {
+  if (!canVerify) {
+    return <span className={styles.viewerBadge}>Data access</span>;
+  }
+
   if (booking.status === "pending") {
     return (
       <>
@@ -432,8 +534,8 @@ function ActionButtons({ booking, onChange }) {
   }
 
   return (
-    <button className={`${styles.btn} ${styles.btnConfirm} ${styles.btnSm}`} onClick={() => onChange(booking.id, "confirmed")}>
-      Verify
+    <button className={`${styles.btn} ${styles.btnRejectedDisabled} ${styles.btnSm}`} disabled>
+      Rejected Final
     </button>
   );
 }

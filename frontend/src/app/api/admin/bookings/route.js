@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 export async function GET(request) {
   try {
-    requireAdmin(request);
+    await requireAdmin(request);
     await connectDb();
 
     const bookings = await Booking.find().sort({ createdAt: -1 });
@@ -19,7 +19,7 @@ export async function GET(request) {
 
 export async function DELETE(request) {
   try {
-    requireAdmin(request);
+    await requireAdmin(request, { ownerOnly: true });
     await connectDb();
 
     const bookings = await Booking.find().select("screenshotPublicId");

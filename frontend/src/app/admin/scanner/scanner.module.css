@@ -1,0 +1,254 @@
+.page {
+  min-height: 100vh;
+  padding: 24px;
+  background: linear-gradient(135deg, #06152a, #102a4d);
+  color: #172033;
+}
+
+.panel {
+  width: min(100%, 620px);
+  margin: 0 auto;
+  padding: 24px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.header span {
+  color: #e31837;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.header h1 {
+  margin: 4px 0 0;
+  color: #002244;
+  font-size: clamp(28px, 7vw, 42px);
+}
+
+.header a {
+  color: #002244;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.cameraBox {
+  position: relative;
+  display: grid;
+  min-height: 340px;
+  place-items: center;
+  overflow: hidden;
+  border: 2px dashed #b8c5d6;
+  border-radius: 16px;
+  background: #eef3f8;
+}
+
+.video {
+  width: 100%;
+  min-height: 340px;
+  object-fit: cover;
+}
+
+.cameraBox p {
+  position: absolute;
+  max-width: 280px;
+  padding: 12px 14px;
+  border-radius: 999px;
+  color: #5f6b7a;
+  background: rgba(255, 255, 255, 0.88);
+  font-weight: 800;
+  text-align: center;
+}
+
+.primaryButton,
+.secondaryButton,
+.manualForm button {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 10px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.primaryButton {
+  margin-top: 16px;
+  color: #ffffff;
+  background: #e31837;
+}
+
+.primaryButton:disabled {
+  cursor: not-allowed;
+  background: #9aa4b2;
+}
+
+.helpText {
+  margin: 10px 0 0;
+  color: #607086;
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.secondaryButton {
+  margin-top: 12px;
+  color: #002244;
+  background: #eef3f8;
+}
+
+.manualForm,
+.entryForm {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.manualForm label,
+.entryForm label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #002244;
+  font-weight: 900;
+}
+
+.entryForm label span {
+  color: #607086;
+  font-size: 0.82rem;
+}
+
+.manualForm input,
+.entryForm select {
+  min-height: 46px;
+  border: 1px solid #d6dce6;
+  border-radius: 10px;
+  padding: 0 12px;
+  color: #172033;
+  background: #ffffff;
+  font-weight: 700;
+}
+
+.manualForm button {
+  color: #002244;
+  background: #dbe7f4;
+}
+
+.ticket dl {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.ticket dl div {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.ticket dt {
+  color: #607086;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ticket dd {
+  margin: 0;
+  color: #172033;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.valid,
+.complete,
+.pending,
+.rejected,
+.message,
+.error,
+.doneText,
+.blockedText {
+  border-radius: 10px;
+  padding: 13px 14px;
+  font-weight: 900;
+}
+
+.valid {
+  color: #14532d;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+}
+
+.complete {
+  color: #1e3a8a;
+  background: #dbeafe;
+  border: 1px solid #93c5fd;
+}
+
+.pending {
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+}
+
+.rejected,
+.blockedText {
+  color: #7f1d1d;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+}
+
+.message {
+  margin-top: 14px;
+  color: #14532d;
+  background: #dcfce7;
+}
+
+.error {
+  margin-top: 14px;
+  color: #7f1d1d;
+  background: #fee2e2;
+}
+
+.doneText {
+  margin-top: 18px;
+  color: #1e3a8a;
+  background: #dbeafe;
+}
+
+.blockedText {
+  margin-top: 18px;
+  line-height: 1.45;
+}
+
+@media (max-width: 540px) {
+  .page {
+    padding: 14px;
+  }
+
+  .panel {
+    padding: 18px;
+  }
+
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ticket dl div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}

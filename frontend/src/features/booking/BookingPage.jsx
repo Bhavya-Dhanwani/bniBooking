@@ -50,6 +50,9 @@ export default function BookingPage() {
   const [screenshot, setScreenshot] = useState("");
   const [loading, setLoading] = useState(false);
   const [popup, setPopup] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuRendered, setMenuRendered] = useState(false);
+  const [videoOpen, setVideoOpen] = useState(false);
   const [isBniMember, setIsBniMember] = useState(false);
   const [discountEnabled, setDiscountEnabled] = useState(false);
   const [discountAllowance, setDiscountAllowance] = useState(NO_DISCOUNT_ALLOWANCE);
@@ -67,6 +70,32 @@ export default function BookingPage() {
       .catch((error) => showPopup("Unable to load seats", error.message, "danger"));
   }, []);
 
+  useEffect(() => {
+    if (!menuRendered && !videoOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    function handleEscape(event) {
+      if (event.key === "Escape") {
+        closeMenu();
+        setVideoOpen(false);
+      }
+    }
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [menuRendered, videoOpen]);
+
+  useEffect(() => {
+    if (menuOpen || !menuRendered) return undefined;
+    const timeout = window.setTimeout(() => setMenuRendered(false), 260);
+    return () => window.clearTimeout(timeout);
+  }, [menuOpen, menuRendered]);
+
   const totals = useMemo(() => calculateTotals(selectedSeats, discountAllowance), [selectedSeats, discountAllowance]);
   const upiQrSrc = useMemo(() => `/api/upi-qr?amount=${totals.total}`, [totals.total]);
   const preBookedSeatIds = useMemo(() => new Set(getPreBookedSeatIds()), []);
@@ -76,6 +105,15 @@ export default function BookingPage() {
 
   function showPopup(title, message, type = "info") {
     setPopup({ title, message, type });
+  }
+
+  function openMenu() {
+    setMenuRendered(true);
+    requestAnimationFrame(() => setMenuOpen(true));
+  }
+
+  function closeMenu() {
+    setMenuOpen(false);
   }
 
   function toggleSeat(seat) {
@@ -104,6 +142,7 @@ export default function BookingPage() {
 
   async function logout() {
     try {
+      closeMenu();
       await logoutUser();
       router.push("/login");
       router.refresh();
@@ -134,6 +173,15 @@ export default function BookingPage() {
     reader.readAsDataURL(file);
   }
 
+  function changePaymentMethod(event) {
+    const method = event.target.value;
+    setPaymentMethod(method);
+    setPaid(false);
+    setScreenshot("");
+    setFileLabel("Click here to upload screenshot");
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
   async function submitBooking() {
     if (paymentMethod !== "cash" && !screenshot) {
       return showPopup("Screenshot required", "Please upload the payment screenshot.", "danger");
@@ -152,13 +200,15 @@ export default function BookingPage() {
         ...current,
         ...selectedSeats.reduce((map, seat) => ({ ...map, [seat.id]: "pending" }), {}),
       }));
-      showPopup(
-        "Booking submitted",
-        `Booking submitted!\nBooking ID: ${booking.id}\nTotal Paid: ${formatMoney(
-          booking.total,
-        )} (incl. 18% GST)\n\nAdmin will verify your payment shortly.`,
-        "success",
-      );
+      const confirmationMessage =
+        paymentMethod === "cash"
+          ? `Booking submitted!\nBooking ID: ${booking.id}\nAmount Due: ${formatMoney(
+              booking.total,
+            )} (incl. 18% GST)\n\nPay on the day the booking is made, otherwise your booking will be rejected.\n\nBNI KUTCH\nDBZ SOUTH -188/A FIRST FLOOR, OPP. SHIVAJI PARK,\nGANDHIDHAM (KUTCH) GUJARAT 370201`
+          : `Booking submitted!\nBooking ID: ${booking.id}\nTotal Paid: ${formatMoney(
+              booking.total,
+            )} (incl. 18% GST)\n\nAdmin will verify your payment shortly.`;
+      showPopup("Booking submitted", confirmationMessage, "success");
       setDiscountEnabled(Boolean(booking.discountEnabled));
       setDiscountAllowance(booking.discountAllowance || NO_DISCOUNT_ALLOWANCE);
       setSelectedSeats([]);
@@ -187,15 +237,53 @@ export default function BookingPage() {
             <small>Changing the Way the World Does Business</small>
           </div>
         </div>
-        <div className={styles.headerActions}>
-          <Link className={styles.headerActionLink} href="/dashboard">
-            Dashboard
-          </Link>
-          <button className={styles.headerLogout} type="button" onClick={logout}>
-            Logout
-          </button>
-        </div>
+        <button
+          className={styles.menuButton}
+          type="button"
+          aria-label="Open account menu"
+          aria-expanded={menuOpen}
+          aria-controls="account-menu"
+          onClick={openMenu}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
       </header>
+
+      {menuRendered && (
+        <>
+          <button
+            className={`${styles.menuBackdrop} ${menuOpen ? styles.menuBackdropOpen : ""}`}
+            type="button"
+            aria-label="Close account menu"
+            onClick={closeMenu}
+          />
+          <aside
+            className={`${styles.sidebar} ${menuOpen ? styles.sidebarOpen : ""}`}
+            id="account-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Account menu"
+          >
+            <div className={styles.sidebarTop}>
+              <span>Account</span>
+              <button className={styles.closeButton} type="button" aria-label="Close account menu" onClick={closeMenu}>
+                <span />
+                <span />
+              </button>
+            </div>
+            <nav className={styles.headerActions} aria-label="Account actions">
+              <Link className={styles.headerActionLink} href="/dashboard" onClick={closeMenu}>
+                Dashboard
+              </Link>
+              <button className={styles.headerLogout} type="button" onClick={logout}>
+                Logout
+              </button>
+            </nav>
+          </aside>
+        </>
+      )}
 
       <section className={styles.hero}>
         <div className={styles.heroInner}>
@@ -210,6 +298,10 @@ export default function BookingPage() {
             A soulful mehfil hosted by BNI Kutch. Select seats, review GST-inclusive pricing, and complete payment for
             admin verification.
           </p>
+          <button className={styles.artistVideoButton} type="button" onClick={() => setVideoOpen(true)}>
+            <span className={styles.playIcon} aria-hidden="true" />
+            Who is Laksh Maheshwari?
+          </button>
           <div className={styles.heroMeta}>
             <span>BNI Kutch Chapter</span>
             <span>Premium Sofa & Chair Seating</span>
@@ -217,6 +309,34 @@ export default function BookingPage() {
           </div>
         </div>
       </section>
+
+      {videoOpen && (
+        <div className={styles.videoModalLayer} role="presentation" onClick={() => setVideoOpen(false)}>
+          <section
+            className={styles.videoModal}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="artist-video-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className={styles.videoModalHeader}>
+              <h2 id="artist-video-title">Who is Laksh Maheshwari?</h2>
+              <button className={styles.videoCloseButton} type="button" aria-label="Close video" onClick={() => setVideoOpen(false)}>
+                <span />
+                <span />
+              </button>
+            </div>
+            <div className={styles.videoFrame}>
+              <iframe
+                src="https://www.youtube-nocookie.com/embed/xZUlRV7Vxdk?autoplay=1&rel=0"
+                title="Who is Laksh Maheshwari?"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+          </section>
+        </div>
+      )}
 
       <div className={styles.container}>
         <section className={styles.eventContactCard}>
@@ -400,8 +520,9 @@ export default function BookingPage() {
             </div>
             <h2>Payment &amp; Confirmation</h2>
             <p className={styles.paymentIntro}>
-              Review your selection, complete payment, and upload the screenshot for admin verification. 18% GST is
-              included in the total.
+              {paymentMethod === "cash"
+                ? "Review your selection and complete your cash booking. 18% GST is included in the total."
+                : "Review your selection, complete payment, and upload the screenshot for admin verification. 18% GST is included in the total."}
             </p>
             <OrderSummary selectedSeats={selectedSeats} totals={totals} />
 
@@ -411,11 +532,11 @@ export default function BookingPage() {
                 id="paymentMethod"
                 className={styles.pmSelect}
                 value={paymentMethod}
-                onChange={(event) => setPaymentMethod(event.target.value)}
+                onChange={changePaymentMethod}
               >
                 <option value="upi">UPI - Scan QR / pay to munjalshah9@okicici</option>
                 <option value="imps">IMPS / NEFT - Bank Transfer</option>
-                <option value="cash">Cash - Pay at the venue</option>
+                <option value="cash">Cash - Pay at the BNI Kutch Regional Office</option>
               </select>
             </div>
 
@@ -453,26 +574,30 @@ export default function BookingPage() {
                 <div className={styles.pmPanel}>
                   <h3 className={styles.pmTitle}>Pay in Cash at the BNI Kutch Regional Office</h3>
                   <p className={styles.cashText}>
-                    Please pay at the BNI Kutch Regional Office on the booking day. Your seats will be marked as pending
-                    until the admin confirms the cash receipt.
+                    Complete your booking now and pay in cash at the BNI Kutch Regional Office.
                   </p>
-                  <p className={styles.contactNote}>
-                    Booking: Aditya Sharma +91 99988 13569 | Sponsorship Query: Raj Shah +91 72111 99992 | Meet
-                    Morbia: +91 88666 99994
+                  <p className={styles.cashWarning}>
+                    Pay on the day the booking is made, otherwise your booking will be rejected.
                   </p>
-                  <p className={styles.cashNote}>For cash bookings, payment screenshot upload is optional.</p>
+                  <address className={styles.cashAddress}>
+                    <strong>BNI KUTCH</strong>
+                    <span>DBZ SOUTH -188/A FIRST FLOOR, OPP. SHIVAJI PARK,</span>
+                    <span>GANDHIDHAM (KUTCH) GUJARAT 370201</span>
+                  </address>
                 </div>
               )}
             </div>
 
-            <div className={styles.paidConfirm}>
-              <label className={styles.checkRow}>
-                <input type="checkbox" checked={paid} onChange={(event) => setPaid(event.target.checked)} />
-                <span>I have completed the payment</span>
-              </label>
-            </div>
+            {paymentMethod !== "cash" && (
+              <div className={styles.paidConfirm}>
+                <label className={styles.checkRow}>
+                  <input type="checkbox" checked={paid} onChange={(event) => setPaid(event.target.checked)} />
+                  <span>I have completed the payment</span>
+                </label>
+              </div>
+            )}
 
-            {paid && (
+            {(paymentMethod === "cash" || paid) && (
               <div className={styles.uploadForm}>
                 <label>GST Number (Optional)</label>
                 <input
@@ -481,12 +606,16 @@ export default function BookingPage() {
                   placeholder="Enter GSTIN for invoice (optional)"
                   maxLength={15}
                 />
-                <label>Payment Screenshot{paymentMethod === "cash" ? " (Optional)" : ""}</label>
-                <button type="button" className={styles.uploadWrap} onClick={() => fileRef.current?.click()}>
-                  <span className={screenshot ? styles.fileSelected : ""}>{fileLabel}</span>
-                  <small>PNG, JPG or JPEG (max 2MB)</small>
-                </button>
-                <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/jpg" hidden onChange={handleFileChange} />
+                {paymentMethod !== "cash" && (
+                  <>
+                    <label>Payment Screenshot</label>
+                    <button type="button" className={styles.uploadWrap} onClick={() => fileRef.current?.click()}>
+                      <span className={screenshot ? styles.fileSelected : ""}>{fileLabel}</span>
+                      <small>PNG, JPG or JPEG (max 2MB)</small>
+                    </button>
+                    <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/jpg" hidden onChange={handleFileChange} />
+                  </>
+                )}
                 <button className={`${styles.btn} ${styles.btnPrimary} ${styles.fullButton}`} onClick={submitBooking} disabled={loading}>
                   {loading ? "Submitting..." : "Complete Booking"}
                 </button>

@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 export async function GET(request) {
   try {
-    requireAdmin(request);
+    await requireAdmin(request);
     await connectDb();
     return json({ discountEnabled: await isDiscountEnabled() });
   } catch (error) {
@@ -16,7 +16,7 @@ export async function GET(request) {
 
 export async function PATCH(request) {
   try {
-    requireAdmin(request);
+    await requireAdmin(request, { ownerOnly: true });
     await connectDb();
     const body = await request.json();
     if (typeof body.discountEnabled !== "boolean") {

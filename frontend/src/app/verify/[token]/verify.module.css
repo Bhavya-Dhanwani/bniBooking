@@ -37,7 +37,10 @@
 }
 
 .valid,
-.invalid {
+.invalid,
+.pending,
+.rejected,
+.blockedText {
   border-radius: 8px;
   padding: 14px 16px;
   margin-bottom: 18px;
@@ -55,6 +58,26 @@
   color: #7f1d1d;
   background: #fee2e2;
   border: 1px solid #fecaca;
+}
+
+.pending {
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  font-weight: 800;
+  text-align: center;
+}
+
+.rejected,
+.blockedText {
+  color: #7f1d1d;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  font-weight: 800;
+}
+
+.rejected {
+  text-align: center;
 }
 
 .invalid h2 {
@@ -102,6 +125,52 @@
 .confirmButton:disabled {
   cursor: not-allowed;
   background: #9aa4b2;
+}
+
+.entryForm {
+  display: grid;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.entryForm label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #002244;
+  font-weight: 800;
+}
+
+.entryForm label span {
+  color: #607086;
+  font-size: 0.82rem;
+}
+
+.entryForm select {
+  min-height: 46px;
+  border: 1px solid #d6dce6;
+  border-radius: 8px;
+  padding: 0 12px;
+  color: #172033;
+  font-weight: 800;
+  background: #ffffff;
+}
+
+.entryForm .confirmButton {
+  margin-top: 0;
+}
+
+.scanAgain {
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  margin-top: 12px;
+  border-radius: 8px;
+  color: #002244;
+  background: #eef3f8;
+  font-weight: 800;
+  text-decoration: none;
 }
 
 @media (max-width: 520px) {

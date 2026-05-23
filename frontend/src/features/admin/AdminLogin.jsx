@@ -9,7 +9,7 @@ import styles from "./admin.module.css";
 
 export default function AdminLogin() {
   const router = useRouter();
-  const [token, setToken] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [popup, setPopup] = useState(null);
 
@@ -17,8 +17,8 @@ export default function AdminLogin() {
     event.preventDefault();
     setLoading(true);
     try {
-      await fetchAdminStats(token);
-      setAdminToken(token);
+      await fetchAdminStats(password);
+      setAdminToken(password);
       router.push("/admin");
     } catch (error) {
       setPopup({ title: "Login failed", message: error.message, type: "danger" });
@@ -32,13 +32,18 @@ export default function AdminLogin() {
       <header className={styles.header}>
         <div className={styles.brand}>
           <img src="/bni-logo.jpg" alt="BNI Kutch" />
-          <div>Admin Verification</div>
+          <div>Admin Access</div>
         </div>
       </header>
       <form className={styles.loginBox} onSubmit={login}>
         <h1>Admin Login</h1>
-        <label>Admin Token</label>
-        <input value={token} onChange={(event) => setToken(event.target.value)} placeholder="Enter admin token" />
+        <label>Password</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          placeholder="Enter admin password"
+        />
         <button className={`${styles.btn} ${styles.btnConfirm}`} disabled={loading}>
           {loading ? "Checking..." : "Open Admin"}
         </button>

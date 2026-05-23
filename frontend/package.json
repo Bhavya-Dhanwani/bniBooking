@@ -12,6 +12,7 @@
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.10.0",
     "exceljs": "^4.4.0",
+    "jsqr": "^1.4.0",
     "mongoose": "^9.6.2",
     "next": "16.2.6",
     "nodemailer": "^8.0.7",
