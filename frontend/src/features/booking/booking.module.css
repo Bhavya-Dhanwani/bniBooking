@@ -1514,6 +1514,90 @@
   font-weight: 700;
 }
 
+.eventContactCard {
+  max-width: 700px;
+  margin: 30px auto 20px;
+  padding: 24px 20px;
+  background: linear-gradient(135deg, #fffcf2, #f8efd7);
+  border: 1px solid rgba(197, 160, 89, 0.45);
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(107, 15, 26, 0.07);
+  text-align: center;
+}
+
+.eventContactCard h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  color: var(--maroon);
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+}
+
+.eventContactGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  text-align: center;
+}
+
+.eventContactBox {
+  padding: 16px 12px;
+  background: linear-gradient(135deg, #ffffff, #fff8e1);
+  border: 1px solid rgba(197, 160, 89, 0.3);
+  border-radius: 12px;
+}
+
+.contactLabel {
+  font-size: 0.7rem;
+  color: var(--gold-3);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+}
+
+.contactName {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.05rem;
+  color: var(--maroon);
+  font-weight: 700;
+}
+
+.eventContactBox a {
+  color: var(--maroon);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: block;
+  margin-top: 4px;
+}
+
+.meetMorbia {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(197, 160, 89, 0.3);
+}
+
+.meetMorbia .contactLabel {
+  margin-bottom: 4px;
+}
+
+.footerNote {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  color: #6b4c3a;
+  text-align: center;
+  margin: 24px auto 130px;
+  line-height: 1.5;
+}
+
+.footerNote span {
+  color: var(--gold-3);
+  font-style: normal;
+  font-weight: 700;
+  padding: 0 10px;
+}
+
 .uploadForm input {
   border-color: rgba(197, 160, 89, 0.45);
   background: #fffcf2;
@@ -1556,6 +1640,10 @@
 
   .ruleCard {
     align-items: flex-start;
+  }
+
+  .eventContactGrid {
+    grid-template-columns: 1fr;
   }
 
   .bankGrid div {

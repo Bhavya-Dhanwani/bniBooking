@@ -408,6 +408,32 @@ export default function BookingPage() {
             )}
           </section>
         )}
+
+        <section className={styles.eventContactCard}>
+          <h3>Event Contact Details</h3>
+          <div className={styles.eventContactGrid}>
+            <div className={styles.eventContactBox}>
+              <div className={styles.contactLabel}>Booking Query</div>
+              <div className={styles.contactName}>Aditya Sharma</div>
+              <a href="tel:+919998813569">+91 99988 13569</a>
+            </div>
+            <div className={styles.eventContactBox}>
+              <div className={styles.contactLabel}>Sponsorship Query</div>
+              <div className={styles.contactName}>Raj Shah</div>
+              <a href="tel:+917211199992">+91 72111 99992</a>
+              <div className={styles.meetMorbia}>
+                <div className={styles.contactLabel}>Meet Morbia</div>
+                <a href="tel:+918866699994">+91 88666 99994</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <p className={styles.footerNote}>
+          <span>*</span> An unforgettable evening of poetry, stories &amp; music <span>*</span>
+          <br />
+          © BNI Kutch Chapter · Presented with love
+        </p>
       </div>
 
       <div className={styles.bookingPanel}>
