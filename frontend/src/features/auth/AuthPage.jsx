@@ -1,14 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { loginUser, signupUser } from "@/services/api";
 import AppPopup from "@/shared/AppPopup";
 import styles from "./auth.module.css";
 
 export default function AuthPage({ mode }) {
-  const router = useRouter();
   const isSignup = mode === "signup";
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -31,7 +29,9 @@ export default function AuthPage({ mode }) {
           : "Redirecting to home.",
         type: "success",
       });
-      window.setTimeout(() => router.push("/"), 700);
+      window.setTimeout(() => {
+        window.location.assign(getSafeNextPath(new URLSearchParams(window.location.search).get("next")));
+      }, 700);
     } catch (error) {
       setPopup({ title: isSignup ? "Signup failed" : "Login failed", message: error.message, type: "danger" });
     } finally {
@@ -122,4 +122,9 @@ export default function AuthPage({ mode }) {
       />
     </main>
   );
+}
+
+function getSafeNextPath(nextPath) {
+  if (!nextPath || !nextPath.startsWith("/") || nextPath.startsWith("//")) return "/";
+  return nextPath;
 }

@@ -11,11 +11,30 @@ async function request(path, options = {}) {
 
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}));
-    throw new Error(payload.message || "Request failed");
+    throw new Error(getSafeErrorMessage(payload.message));
   }
 
   if (response.status === 204) return null;
   return response.json();
+}
+
+function getSafeErrorMessage(message) {
+  const text = String(message || "");
+  const databaseErrorSignals = [
+    "buffering timed out",
+    "querySrv",
+    "ECONNREFUSED",
+    "Server selection timed out",
+    "MONGO_URI",
+    "mongodb",
+    "mongoose",
+  ];
+
+  if (databaseErrorSignals.some((signal) => text.toLowerCase().includes(signal.toLowerCase()))) {
+    return "Booking service is temporarily unavailable. Please try again in a few minutes.";
+  }
+
+  return text || "Request failed";
 }
 
 export function fetchSeatStatus() {

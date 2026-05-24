@@ -1380,6 +1380,21 @@
   color: #6b4c3a;
 }
 
+.sofaCapacityNote {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 9px 18px;
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffefc4, var(--gold-2));
+  color: var(--maroon);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.12rem;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  box-shadow: 0 8px 18px rgba(107, 15, 26, 0.12);
+}
+
 .priceGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1905,6 +1920,37 @@
   color: var(--maroon);
   font-family: Georgia, "Times New Roman", serif;
   letter-spacing: 1px;
+}
+
+.cashMap {
+  max-width: 560px;
+  margin: 14px auto 0;
+  overflow: hidden;
+  border: 1px solid rgba(197, 160, 89, 0.42);
+  border-radius: 8px;
+  background: rgba(255, 252, 242, 0.9);
+}
+
+.cashMap iframe {
+  display: block;
+  width: 100%;
+  height: 220px;
+  border: 0;
+}
+
+.cashMap a {
+  display: block;
+  padding: 10px 12px;
+  border-top: 1px solid rgba(197, 160, 89, 0.32);
+  color: var(--maroon);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+}
+
+.cashMap a:hover {
+  background: rgba(197, 160, 89, 0.12);
 }
 
 .eventContactCard {

@@ -541,7 +541,7 @@ function ActionButtons({ booking, onChange, canVerify }) {
 }
 
 function PaymentProof({ booking, onOpen, compact = false }) {
-  if (!booking.screenshot) return <span className={styles.noProof}>Cash</span>;
+  if (!booking.screenshot) return <span className={styles.noProof}>Cash payment</span>;
 
   return (
     <button type="button" className={`${styles.thumbButton} ${compact ? styles.compactProof : ""}`} onClick={() => onOpen(booking.screenshot)}>

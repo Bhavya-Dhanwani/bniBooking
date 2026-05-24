@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHash } from "crypto";
 import bcrypt from "bcryptjs";
-import { connectDb } from "@/server/db";
+import { connectDb, isDatabaseConnectionError } from "@/server/db";
 import AdminAccess from "@/server/models/AdminAccess";
 
 export function json(data, status = 200) {
@@ -13,6 +13,13 @@ export function noContent() {
 }
 
 export function errorResponse(error) {
+  if (isDatabaseConnectionError(error)) {
+    return NextResponse.json(
+      { message: "Database connection is currently unavailable. Please try again in a few minutes." },
+      { status: 503 },
+    );
+  }
+
   return NextResponse.json(
     { message: error.message || "Something went wrong" },
     { status: error.statusCode || 500 },

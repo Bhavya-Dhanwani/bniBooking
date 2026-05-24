@@ -12,11 +12,28 @@ export async function connectDb() {
     }
 
     mongoose.set("strictQuery", true);
-    connectionPromise = mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 10000,
-    });
+    connectionPromise = mongoose
+      .connect(uri, {
+        serverSelectionTimeoutMS: 10000,
+      })
+      .catch((error) => {
+        connectionPromise = null;
+        throw error;
+      });
   }
 
   await connectionPromise;
   return mongoose.connection;
+}
+
+export function isDatabaseConnectionError(error) {
+  const message = String(error?.message || "");
+  return [
+    "ECONNREFUSED",
+    "ETIMEOUT",
+    "ENOTFOUND",
+    "querySrv",
+    "Server selection timed out",
+    "MONGO_URI is not configured",
+  ].some((text) => message.includes(text));
 }

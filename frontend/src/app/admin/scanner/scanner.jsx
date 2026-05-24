@@ -264,7 +264,7 @@ export default function AdminScanner() {
                 <dd>{booking.seats.join(", ")}</dd>
               </div>
               <div>
-                <dt>Total Paid</dt>
+                <dt>{getPaymentAmountLabel(booking)}</dt>
                 <dd>{formatMoney(booking.total)}</dd>
               </div>
             </dl>
@@ -272,7 +272,7 @@ export default function AdminScanner() {
             {booking.status !== "confirmed" ? (
               <p className={styles.blockedText}>
                 {booking.status === "pending"
-                  ? "Payment is not verified yet. Confirm this booking from the dashboard before allowing entry."
+                  ? getPendingEntryMessage(booking)
                   : "This booking was rejected. Entry is not allowed."}
               </p>
             ) : booking.remainingCount > 0 ? (
@@ -320,7 +320,23 @@ function getTicketStatusClass(booking) {
 }
 
 function getTicketStatusText(booking) {
-  if (booking.status === "pending") return "Pending payment verification";
+  if (booking.status === "pending") return isCashBooking(booking) ? "Cash payment pending" : "Pending payment verification";
   if (booking.status === "rejected") return "Rejected ticket";
   return `${booking.checkedInCount} of ${booking.totalGuests} tickets checked in`;
+}
+
+function getPaymentAmountLabel(booking) {
+  return isCashBooking(booking) && booking.status !== "confirmed" ? "Amount Due" : "Total Paid";
+}
+
+function getPendingEntryMessage(booking) {
+  if (isCashBooking(booking)) {
+    return "Cash payment is pending. Confirm this booking from the dashboard after payment is received.";
+  }
+
+  return "Payment is not verified yet. Confirm this booking from the dashboard before allowing entry.";
+}
+
+function isCashBooking(booking) {
+  return booking.paymentMethod === "cash";
 }

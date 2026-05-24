@@ -129,14 +129,15 @@ export default function BookingPage() {
   }
 
   async function proceedToPayment() {
+    setPaymentVisible(true);
+    requestAnimationFrame(() => paymentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+
     try {
       const { discountEnabled: discountsAvailable, discountAllowance: allowance } = await fetchCurrentUser();
       setDiscountEnabled(Boolean(discountsAvailable));
       setDiscountAllowance(allowance || NO_DISCOUNT_ALLOWANCE);
-      setPaymentVisible(true);
-      requestAnimationFrame(() => paymentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
-    } catch (error) {
-      showPopup("Unable to continue", error.message, "danger");
+    } catch {
+      // Keep the current pricing state; booking submission will surface any real server issue.
     }
   }
 
@@ -204,7 +205,7 @@ export default function BookingPage() {
         paymentMethod === "cash"
           ? `Booking submitted!\nBooking ID: ${booking.id}\nAmount Due: ${formatMoney(
               booking.total,
-            )} (incl. 18% GST)\n\nPay on the day the booking is made, otherwise your booking will be rejected.\n\nBNI KUTCH\nDBZ SOUTH -188/A FIRST FLOOR, OPP. SHIVAJI PARK,\nGANDHIDHAM (KUTCH) GUJARAT 370201`
+            )} (incl. 18% GST)\n\nExcited to welcome you!\nTo confirm your booking, please complete the cash payment within 24 hours.\n\nBNI KUTCH\nDBZ SOUTH -188/A FIRST FLOOR, OPP. SHIVAJI PARK,\nGANDHIDHAM (KUTCH) GUJARAT 370201`
           : `Booking submitted!\nBooking ID: ${booking.id}\nTotal Paid: ${formatMoney(
               booking.total,
             )} (incl. 18% GST)\n\nAdmin will verify your payment shortly.`;
@@ -306,6 +307,9 @@ export default function BookingPage() {
             <span>BNI Kutch Chapter</span>
             <span>Premium Sofa & Chair Seating</span>
             <span>Secure Verification</span>
+            <span>Date: 27th June 2026</span>
+            <span>Time: 7 PM</span>
+            <span>Venue: IFFCO Community Center</span>
           </div>
         </div>
       </section>
@@ -352,7 +356,7 @@ export default function BookingPage() {
               <div className={styles.contactName}>Raj Shah</div>
               <a href="tel:+917211199992">+91 72111 99992</a>
               <div className={styles.meetMorbia}>
-                <div className={styles.contactLabel}>Meet Morbia</div>
+                <div className={styles.contactName}>Meet Morbia</div>
                 <a href="tel:+918866699994">+91 88666 99994</a>
               </div>
             </div>
@@ -577,13 +581,24 @@ export default function BookingPage() {
                     Complete your booking now and pay in cash at the BNI Kutch Regional Office.
                   </p>
                   <p className={styles.cashWarning}>
-                    Pay on the day the booking is made, otherwise your booking will be rejected.
+                    Excited to welcome you! To confirm your booking, please complete the cash payment within 24 hours.
                   </p>
                   <address className={styles.cashAddress}>
                     <strong>BNI KUTCH</strong>
                     <span>DBZ SOUTH -188/A FIRST FLOOR, OPP. SHIVAJI PARK,</span>
                     <span>GANDHIDHAM (KUTCH) GUJARAT 370201</span>
                   </address>
+                  <div className={styles.cashMap}>
+                    <iframe
+                      title="IFFCO Community Center map location"
+                      src="https://www.google.com/maps?q=IFFCO%20Community%20Center%20Gandhidham&output=embed"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                    <a href="https://share.google/np1ghYkw0nbgJW49y" target="_blank" rel="noreferrer">
+                      Open in Google Maps
+                    </a>
+                  </div>
                 </div>
               )}
             </div>
@@ -729,6 +744,7 @@ function PriceTable({ discountAllowance }) {
       <div className={styles.pricingHeader}>
         <h2>Choose Your Seat in the Mehfil</h2>
         <p>Every seat brings you closer to the story. Prices are per seat, exclusive of 18% GST.</p>
+        <div className={styles.sofaCapacityNote}>Each sofa booking admits 2 guests</div>
       </div>
       <div className={styles.priceGrid}>
         <PriceCard hasDiscount={hasDiscountForCategory("platinum", discountAllowance)} tone="platinumCard" title="Sofa - Platinum" sub="Rows 2, 3, 4 · Most premium" discounted={9000} standard={11000} swatchClass="legendplatinum" />

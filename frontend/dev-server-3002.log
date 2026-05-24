@@ -1,0 +1,11 @@
+
+> frontend@0.1.0 dev
+> next dev --hostname 127.0.0.1 -p 3002
+
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://127.0.0.1:3002
+- Network:       http://127.0.0.1:3002
+- Environments: .env
+✓ Ready in 461ms
+Creating turbopack project { dir: 'D:\\Projects\\BNI\\frontend', testMode: true }
+

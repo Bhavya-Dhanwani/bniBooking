@@ -22,6 +22,7 @@ function serializeBooking(booking) {
     baseAmount: booking.baseAmount,
     gst: booking.gst,
     total: booking.total,
+    paymentMethod: booking.paymentMethod,
     status: booking.status,
     entryAllowed: booking.status === "confirmed",
     date: booking.createdAt,
