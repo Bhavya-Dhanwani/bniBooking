@@ -75,14 +75,16 @@ export async function requireAdmin(request, { ownerOnly = false } = {}) {
     throw createError("Admin access required", 401);
   }
 
-  if (ownerOnly) {
-    throw createError("Only the Super Admin can perform this action.", 403);
+  const canManage = account.role === "admin";
+
+  if (ownerOnly && !canManage) {
+    throw createError("Only an admin can perform this action.", 403);
   }
 
   return {
     role: account.role,
     displayName: account.displayName,
-    canVerify: false,
-    canManage: false,
+    canVerify: canManage,
+    canManage,
   };
 }

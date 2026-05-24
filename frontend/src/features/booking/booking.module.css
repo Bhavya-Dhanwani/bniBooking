@@ -394,6 +394,33 @@
   gap: 0;
 }
 
+.sofaSideLabels {
+  display: grid;
+  grid-template-columns: 320px 56px 320px;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  color: var(--maroon);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  line-height: 1;
+  margin-bottom: 2px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.sofaSideLabels > div:first-child {
+  justify-self: end;
+  width: 230px;
+}
+
+.sofaSideLabels > div:last-child {
+  justify-self: start;
+  width: 230px;
+}
+
 .rowLabel {
   font-size: 0.72rem;
   color: #777;
@@ -1134,6 +1161,122 @@
 .heroTitle span {
   font-style: italic;
   font-weight: 500;
+}
+
+.unavailablePage {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.unavailablePanel {
+  position: relative;
+  z-index: 1;
+  width: min(560px, 100%);
+  padding: 42px 32px 38px;
+  border: 1px solid rgba(197, 160, 89, 0.5);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 252, 242, 0.98), rgba(255, 248, 231, 0.94)),
+    rgba(255, 252, 242, 0.96);
+  box-shadow: 0 30px 80px rgba(80, 46, 12, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  text-align: center;
+}
+
+.unavailablePanel::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(197, 160, 89, 0.22);
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.unavailableGlow {
+  position: absolute;
+  width: min(720px, 90vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(230, 199, 122, 0.34), rgba(107, 15, 26, 0.08) 42%, transparent 68%);
+  filter: blur(4px);
+}
+
+.unavailableLogoWrap {
+  display: inline-grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  margin-bottom: 18px;
+  border: 1px solid rgba(197, 160, 89, 0.38);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 14px 28px rgba(107, 15, 26, 0.08);
+}
+
+.unavailableLogo {
+  width: 78px;
+  height: 78px;
+  object-fit: contain;
+}
+
+.unavailablePanel h1 {
+  margin: 0 0 12px;
+  color: var(--maroon);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 5vw, 2.7rem);
+  letter-spacing: 0;
+  line-height: 1.08;
+}
+
+.unavailablePanel p:last-child {
+  color: #6d5b43;
+  font-size: 1rem;
+  line-height: 1.55;
+  margin: 0 auto;
+  max-width: 360px;
+}
+
+.countdown {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(74px, 1fr));
+  gap: 10px;
+  max-width: 310px;
+  margin: 24px auto 0;
+}
+
+.countdownPart {
+  padding: 12px 10px 10px;
+  border: 1px solid rgba(197, 160, 89, 0.42);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.countdownPart strong {
+  display: block;
+  color: var(--maroon);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.countdownPart span {
+  display: block;
+  margin-top: 6px;
+  color: #7a6540;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.countdownReady {
+  margin-top: 22px;
+  color: var(--maroon);
+  font-weight: 800;
 }
 
 .urduLine,

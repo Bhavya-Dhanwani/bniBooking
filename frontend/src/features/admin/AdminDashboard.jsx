@@ -8,9 +8,11 @@ import {
   fetchAdminBookings,
   fetchAdminStats,
   fetchDiscountSetting,
+  fetchSiteSetting,
   resetBookings,
   updateBookingStatus,
   updateDiscountSetting,
+  updateSiteSetting,
 } from "@/services/api";
 import { clearAdminToken, getAdminToken } from "@/shared/adminAuth";
 import { formatMoney } from "@/shared/money";
@@ -44,6 +46,8 @@ export default function AdminDashboard() {
   const [settingsPopup, setSettingsPopup] = useState(null);
   const [discountEnabled, setDiscountEnabled] = useState(true);
   const [savingDiscount, setSavingDiscount] = useState(false);
+  const [siteDown, setSiteDown] = useState(false);
+  const [savingSiteStatus, setSavingSiteStatus] = useState(false);
   const [access, setAccess] = useState(null);
   const [addAdminOpen, setAddAdminOpen] = useState(false);
   const [newAdminName, setNewAdminName] = useState("");
@@ -53,14 +57,16 @@ export default function AdminDashboard() {
 
   const loadData = useCallback(async (adminToken) => {
     try {
-      const [bookingData, statsData, discountSetting] = await Promise.all([
+      const [bookingData, statsData, discountSetting, siteSetting] = await Promise.all([
         fetchAdminBookings(adminToken),
         fetchAdminStats(adminToken),
         fetchDiscountSetting(adminToken),
+        fetchSiteSetting(adminToken),
       ]);
       setBookings(bookingData);
       setStats(statsData);
       setDiscountEnabled(discountSetting.discountEnabled);
+      setSiteDown(Boolean(siteSetting.siteDown));
       setAccess(statsData.access);
     } catch (error) {
       clearAdminToken();
@@ -103,6 +109,27 @@ export default function AdminDashboard() {
       setSettingsPopup({ title: "Unable to update discount", message: error.message, type: "danger" });
     } finally {
       setSavingDiscount(false);
+    }
+  }
+
+  async function toggleSiteStatus(nextValue) {
+    const adminToken = getAdminToken();
+    setSavingSiteStatus(true);
+    try {
+      const setting = await updateSiteSetting(nextValue, adminToken);
+      const updatedSiteDown = Boolean(setting.siteDown);
+      setSiteDown(updatedSiteDown);
+      setSettingsPopup({
+        title: updatedSiteDown ? "Site is now down" : "Site is live again",
+        message: updatedSiteDown
+          ? "Visitors will see a temporary unavailable page. Admin access remains available."
+          : "Visitors can access the booking site again.",
+        type: updatedSiteDown ? "danger" : "success",
+      });
+    } catch (error) {
+      setSettingsPopup({ title: "Unable to update site status", message: error.message, type: "danger" });
+    } finally {
+      setSavingSiteStatus(false);
     }
   }
 
@@ -245,6 +272,40 @@ export default function AdminDashboard() {
             </label>
           ) : (
             <span className={styles.viewerBadge}>Data access</span>
+          )}
+        </section>
+
+        <section className={`${styles.discountControl} ${siteDown ? styles.dangerControl : ""}`}>
+          <div>
+            <h2>Site Status</h2>
+            <p>
+              {siteDown
+                ? "Down: visitors will see the temporary unavailable page."
+                : "Live: visitors can access the booking site."}
+            </p>
+          </div>
+          {!access ? (
+            <span className={styles.viewerBadge}>Loading</span>
+          ) : canManage && siteDown ? (
+            <button
+              className={`${styles.btn} ${styles.btnConfirm}`}
+              type="button"
+              onClick={() => toggleSiteStatus(false)}
+              disabled={savingSiteStatus}
+            >
+              {savingSiteStatus ? "Saving..." : "Make Site Live"}
+            </button>
+          ) : canManage ? (
+            <button
+              className={`${styles.btn} ${styles.btnReject}`}
+              type="button"
+              onClick={() => toggleSiteStatus(true)}
+              disabled={savingSiteStatus}
+            >
+              {savingSiteStatus ? "Saving..." : "Take Site Down"}
+            </button>
+          ) : (
+            <span className={styles.viewerBadge}>Super Admin only</span>
           )}
         </section>
 

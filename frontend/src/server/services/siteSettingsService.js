@@ -8,11 +8,26 @@ export async function isDiscountEnabled() {
 }
 
 export async function updateDiscountEnabled(discountEnabled) {
-  const settings = await SiteSetting.findOneAndUpdate(
+  await SiteSetting.updateOne(
     { key: PRICING_SETTINGS_KEY },
     { $set: { discountEnabled } },
-    { new: true, upsert: true, setDefaultsOnInsert: true },
-  ).lean();
+    { upsert: true, setDefaultsOnInsert: true },
+  );
 
-  return settings.discountEnabled;
+  return isDiscountEnabled();
+}
+
+export async function isSiteDown() {
+  const settings = await SiteSetting.findOne({ key: PRICING_SETTINGS_KEY }).select("siteDown").lean();
+  return settings?.siteDown ?? false;
+}
+
+export async function updateSiteDown(siteDown) {
+  await SiteSetting.updateOne(
+    { key: PRICING_SETTINGS_KEY },
+    { $set: { siteDown } },
+    { upsert: true, setDefaultsOnInsert: true },
+  );
+
+  return isSiteDown();
 }

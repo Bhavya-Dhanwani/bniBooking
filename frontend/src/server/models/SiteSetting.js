@@ -11,6 +11,10 @@ const siteSettingSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    siteDown: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

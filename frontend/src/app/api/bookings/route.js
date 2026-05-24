@@ -8,12 +8,17 @@ import { uploadPaymentScreenshot } from "@/server/services/cloudinaryService";
 import { calculateTotals, validateSeatCaps } from "@/server/utils/seatPricing";
 import { requireUser, syncBniMemberStatus } from "@/server/services/authService";
 import { getDiscountState } from "@/server/services/discountAllowanceService";
+import { isSiteDown } from "@/server/services/siteSettingsService";
 
 export const runtime = "nodejs";
 
 export async function POST(request) {
   try {
     await connectDb();
+    if (await isSiteDown()) {
+      throw createError("Booking site is temporarily unavailable. Please try again later.", 503);
+    }
+
     await allowRepeatedContactBookings();
     const sessionUser = await syncBniMemberStatus(await requireUser(request));
 

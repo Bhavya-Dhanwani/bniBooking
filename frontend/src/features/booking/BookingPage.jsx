@@ -421,6 +421,11 @@ export default function BookingPage() {
           <div className={styles.sectionTitle}>Diwan-e-Khas - Sofa Seating</div>
           <div className={styles.sofaMapScroll}>
             <div className={styles.sofaRows}>
+              <div className={styles.sofaSideLabels} aria-hidden="true">
+                <div>Left</div>
+                <div />
+                <div>Right</div>
+              </div>
               {sofaRows.map((row) => (
                 <div className={styles.sofaRow} key={row.id}>
                   <div className={styles.seatBlock}>

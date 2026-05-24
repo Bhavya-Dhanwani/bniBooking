@@ -66,11 +66,25 @@ export function fetchDiscountSetting(token) {
   });
 }
 
+export function fetchSiteSetting(token) {
+  return request("/admin/settings/site", {
+    headers: { "x-admin-token": token },
+  });
+}
+
 export function updateDiscountSetting(discountEnabled, token) {
   return request("/admin/settings/discount", {
     method: "PATCH",
     headers: { "x-admin-token": token },
     body: JSON.stringify({ discountEnabled }),
+  });
+}
+
+export function updateSiteSetting(siteDown, token) {
+  return request("/admin/settings/site", {
+    method: "PATCH",
+    headers: { "x-admin-token": token },
+    body: JSON.stringify({ siteDown }),
   });
 }
 

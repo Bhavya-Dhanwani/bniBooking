@@ -9,12 +9,14 @@ import {
   normalizeEmail,
   setSessionCookie,
 } from "@/server/services/authService";
+import { blockWhenSiteDown } from "@/server/services/siteAvailabilityService";
 
 export const runtime = "nodejs";
 
 export async function POST(request) {
   try {
     await connectDb();
+    await blockWhenSiteDown();
 
     const body = await request.json();
     const name = String(body.name || "").trim();

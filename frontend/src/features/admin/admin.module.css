@@ -102,6 +102,20 @@
   font-size: 0.86rem;
 }
 
+.dangerControl {
+  border-color: rgba(176, 36, 44, 0.35);
+  background: #fff7f7;
+}
+
+.dangerControl h2,
+.dangerControl .switch {
+  color: var(--bni-red);
+}
+
+.dangerControl .switch input:checked + .slider {
+  background: var(--bni-red);
+}
+
 .switch {
   display: flex;
   align-items: center;
