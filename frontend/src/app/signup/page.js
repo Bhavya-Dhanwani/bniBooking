@@ -1,7 +1,11 @@
 import AuthPage from "@/features/auth/AuthPage";
 
 export const metadata = {
-  title: "Sign Up | BNI Kutch Event Booking",
+  title: "Sign Up",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function SignupPage() {

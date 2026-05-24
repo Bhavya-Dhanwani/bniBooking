@@ -1,7 +1,11 @@
 import VerifyBooking from "./verify-booking";
 
 export const metadata = {
-  title: "Verify Booking | BNI Kutch",
+  title: "Verify Booking",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function VerifyPage({ params }) {
