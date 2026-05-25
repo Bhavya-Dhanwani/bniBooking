@@ -395,7 +395,7 @@ export default function AdminDashboard() {
                       <small>
                         {booking.email}
                         <br />
-                        {booking.phone}
+                        {booking.phone || "Phone not added"}
                       </small>
                     </td>
                     <td>{booking.gstNumber || "-"}</td>
@@ -447,6 +447,7 @@ export default function AdminDashboard() {
                       <span>Customer</span>
                       <strong>{booking.name}</strong>
                       <small>{booking.email}</small>
+                      <small>{booking.phone || "Phone not added"}</small>
                     </div>
                     <div className={styles.mobileTotal}>
                       <span>Total</span>

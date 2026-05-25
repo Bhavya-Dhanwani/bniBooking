@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { fetchCurrentUser, fetchUserBookings, logoutUser } from "@/services/api";
+import { fetchCurrentUser, fetchUserBookings, logoutUser, updateUserBookingPhone } from "@/services/api";
 import { formatMoney } from "@/shared/money";
 import styles from "./dashboard.module.css";
 
@@ -12,6 +12,10 @@ export default function UserDashboard() {
   const [user, setUser] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingPhoneId, setEditingPhoneId] = useState("");
+  const [phoneDrafts, setPhoneDrafts] = useState({});
+  const [phoneSavingId, setPhoneSavingId] = useState("");
+  const [phoneError, setPhoneError] = useState("");
 
   const loadDashboard = useCallback(async () => {
     try {
@@ -36,6 +40,41 @@ export default function UserDashboard() {
   async function logout() {
     await logoutUser();
     router.push("/login");
+  }
+
+  function startPhoneEdit(booking) {
+    setPhoneError("");
+    setEditingPhoneId(booking.id);
+    setPhoneDrafts((current) => ({ ...current, [booking.id]: booking.phone || "" }));
+  }
+
+  async function savePhone(bookingId) {
+    const phone = String(phoneDrafts[bookingId] || "").trim();
+    const digits = phone.replace(/\D/g, "");
+
+    if (!phone) {
+      setPhoneError("Please enter your phone number.");
+      return;
+    }
+
+    if (digits.length < 10 || digits.length > 15) {
+      setPhoneError("Please enter a valid phone number.");
+      return;
+    }
+
+    setPhoneSavingId(bookingId);
+    setPhoneError("");
+    try {
+      const updatedBooking = await updateUserBookingPhone(bookingId, phone);
+      setBookings((current) =>
+        current.map((booking) => (booking.id === bookingId ? { ...booking, phone: updatedBooking.phone } : booking)),
+      );
+      setEditingPhoneId("");
+    } catch (error) {
+      setPhoneError(error.message);
+    } finally {
+      setPhoneSavingId("");
+    }
   }
 
   return (
@@ -92,6 +131,49 @@ export default function UserDashboard() {
                     ))}
                   </div>
                   <dl>
+                    <div>
+                      <dt>Phone</dt>
+                      <dd>
+                        {editingPhoneId === booking.id ? (
+                          <div className={styles.phoneEdit}>
+                            <input
+                              type="tel"
+                              value={phoneDrafts[booking.id] || ""}
+                              onChange={(event) =>
+                                setPhoneDrafts((current) => ({ ...current, [booking.id]: event.target.value }))
+                              }
+                              placeholder="Enter phone number"
+                              autoComplete="tel"
+                              maxLength={20}
+                            />
+                            <div className={styles.phoneActions}>
+                              <button
+                                type="button"
+                                onClick={() => savePhone(booking.id)}
+                                disabled={phoneSavingId === booking.id}
+                              >
+                                {phoneSavingId === booking.id ? "Saving..." : "Save"}
+                              </button>
+                              <button type="button" onClick={() => setEditingPhoneId("")}>
+                                Cancel
+                              </button>
+                            </div>
+                            {phoneError && <span className={styles.phoneError}>{phoneError}</span>}
+                          </div>
+                        ) : (
+                          <span className={styles.phoneView}>
+                            {booking.phone || "Not added"}
+                            {booking.status === "confirmed" ? (
+                              <small className={styles.phoneLocked}>Locked after confirmation</small>
+                            ) : (
+                              <button type="button" onClick={() => startPhoneEdit(booking)}>
+                                {booking.phone ? "Update" : "Add"}
+                              </button>
+                            )}
+                          </span>
+                        )}
+                      </dd>
+                    </div>
                     <div>
                       <dt>Base</dt>
                       <dd>{formatMoney(booking.baseAmount)}</dd>

@@ -235,7 +235,7 @@
 
 .bookingCard dl {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 10px;
 }
 
@@ -249,6 +249,71 @@
 .bookingCard dd {
   color: var(--maroon);
   font-weight: 900;
+}
+
+.phoneView {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.phoneView button,
+.phoneActions button {
+  border: 1px solid rgba(107, 15, 26, 0.28);
+  border-radius: 6px;
+  background: #fff8e7;
+  color: var(--maroon);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 900;
+  padding: 5px 8px;
+}
+
+.phoneView button:hover,
+.phoneActions button:hover:not(:disabled) {
+  background: var(--maroon);
+  color: #fff;
+}
+
+.phoneEdit {
+  display: grid;
+  gap: 7px;
+}
+
+.phoneEdit input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(197, 160, 89, 0.55);
+  border-radius: 6px;
+  color: var(--midnight);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 8px;
+}
+
+.phoneActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.phoneActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.phoneError {
+  color: #c62828;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.phoneLocked {
+  color: #777;
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 @media (max-width: 720px) {

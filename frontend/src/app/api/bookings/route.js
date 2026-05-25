@@ -12,6 +12,15 @@ import { isSiteDown } from "@/server/services/siteSettingsService";
 
 export const runtime = "nodejs";
 
+function normalizePhone(value) {
+  return String(value || "").trim().replace(/\s+/g, " ");
+}
+
+function isValidPhone(value) {
+  const digits = value.replace(/\D/g, "");
+  return digits.length >= 10 && digits.length <= 15;
+}
+
 export async function POST(request) {
   try {
     await connectDb();
@@ -25,11 +34,14 @@ export async function POST(request) {
     const body = await request.json();
     const name = sessionUser.name;
     const email = sessionUser.email;
+    const phone = normalizePhone(body.phone);
     const gstNumber = String(body.gstNumber || "").trim().toUpperCase();
     const seats = Array.isArray(body.seats) ? body.seats : [];
     const screenshot = String(body.screenshot || "");
     const paymentMethod = ["upi", "imps", "cash"].includes(body.paymentMethod) ? body.paymentMethod : "upi";
 
+    if (!phone) throw createError("Please enter your phone number.");
+    if (!isValidPhone(phone)) throw createError("Please enter a valid phone number.");
     if (!seats.length) throw createError("Please select at least one seat.");
     if (paymentMethod !== "cash" && !screenshot.startsWith("data:image/")) {
       throw createError("Please upload a payment screenshot.");
@@ -53,6 +65,7 @@ export async function POST(request) {
       bookingId,
       name,
       email,
+      phone,
       userId: sessionUser._id,
       gstNumber,
       seats,

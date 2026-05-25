@@ -45,6 +45,7 @@ export default function BookingPage() {
   const [paymentVisible, setPaymentVisible] = useState(false);
   const [paid, setPaid] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("upi");
+  const [phone, setPhone] = useState("");
   const [gstNumber, setGstNumber] = useState("");
   const [fileLabel, setFileLabel] = useState("Click here to upload screenshot");
   const [screenshot, setScreenshot] = useState("");
@@ -184,6 +185,14 @@ export default function BookingPage() {
   }
 
   async function submitBooking() {
+    const phoneDigits = phone.replace(/\D/g, "");
+    if (!phone.trim()) {
+      return showPopup("Phone required", "Please enter your phone number.", "danger");
+    }
+    if (phoneDigits.length < 10 || phoneDigits.length > 15) {
+      return showPopup("Invalid phone", "Please enter a valid phone number.", "danger");
+    }
+
     if (paymentMethod !== "cash" && !screenshot) {
       return showPopup("Screenshot required", "Please upload the payment screenshot.", "danger");
     }
@@ -191,6 +200,7 @@ export default function BookingPage() {
     setLoading(true);
     try {
       const booking = await createBooking({
+        phone,
         gstNumber,
         seats: selectedSeats.map((seat) => seat.id),
         paymentMethod,
@@ -216,6 +226,7 @@ export default function BookingPage() {
       setPaymentVisible(false);
       setPaid(false);
       setPaymentMethod("upi");
+      setPhone("");
       setGstNumber("");
       setScreenshot("");
       setFileLabel("Click here to upload screenshot");
@@ -619,6 +630,15 @@ export default function BookingPage() {
 
             {(paymentMethod === "cash" || paid) && (
               <div className={styles.uploadForm}>
+                <label>Phone Number</label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                  placeholder="Enter phone number"
+                  autoComplete="tel"
+                  maxLength={20}
+                />
                 <label>GST Number (Optional)</label>
                 <input
                   value={gstNumber}

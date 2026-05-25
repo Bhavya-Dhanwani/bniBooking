@@ -138,3 +138,10 @@ export function fetchCurrentUser() {
 export function fetchUserBookings() {
   return request("/user/bookings");
 }
+
+export function updateUserBookingPhone(bookingId, phone) {
+  return request("/user/bookings", {
+    method: "PATCH",
+    body: JSON.stringify({ bookingId, phone }),
+  });
+}
