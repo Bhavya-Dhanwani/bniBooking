@@ -1,14 +1,22 @@
 const ADMIN_TOKEN_KEY = "bniAdminToken";
+const ADMIN_TOKEN_MAX_AGE_SECONDS = 2 * 60 * 60;
+
+function getCookieValue(name) {
+  const cookie = document.cookie
+    .split("; ")
+    .find((part) => part.startsWith(`${name}=`));
+  return cookie ? decodeURIComponent(cookie.slice(name.length + 1)) : "";
+}
 
 export function getAdminToken() {
   if (typeof window === "undefined") return "";
-  return localStorage.getItem(ADMIN_TOKEN_KEY) || "";
+  return getCookieValue(ADMIN_TOKEN_KEY);
 }
 
 export function setAdminToken(token) {
-  localStorage.setItem(ADMIN_TOKEN_KEY, token);
+  document.cookie = `${ADMIN_TOKEN_KEY}=${encodeURIComponent(token)}; Max-Age=${ADMIN_TOKEN_MAX_AGE_SECONDS}; Path=/; SameSite=Lax`;
 }
 
 export function clearAdminToken() {
-  localStorage.removeItem(ADMIN_TOKEN_KEY);
+  document.cookie = `${ADMIN_TOKEN_KEY}=; Max-Age=0; Path=/; SameSite=Lax`;
 }
