@@ -57,16 +57,48 @@ export default function BookingPage() {
   const [isBniMember, setIsBniMember] = useState(false);
   const [discountEnabled, setDiscountEnabled] = useState(false);
   const [discountAllowance, setDiscountAllowance] = useState(NO_DISCOUNT_ALLOWANCE);
+  const [currentUser, setCurrentUser] = useState(null);
   const paymentRef = useRef(null);
   const fileRef = useRef(null);
+
+  const SAVED_STATE_KEY = "bni_booking_state";
+
+  function saveBookingState() {
+    try {
+      sessionStorage.setItem(SAVED_STATE_KEY, JSON.stringify({
+        selectedSeats,
+        paymentMethod,
+        phone,
+        gstNumber,
+      }));
+    } catch { /* ignore */ }
+  }
+
+  function restoreSavedBookingState() {
+    try {
+      const saved = sessionStorage.getItem(SAVED_STATE_KEY);
+      if (!saved) return;
+      const state = JSON.parse(saved);
+      if (state.selectedSeats?.length) {
+        setSelectedSeats(state.selectedSeats);
+        setPaymentMethod(state.paymentMethod || "upi");
+        setPhone(state.phone || "");
+        setGstNumber(state.gstNumber || "");
+        setPaymentVisible(true);
+      }
+      sessionStorage.removeItem(SAVED_STATE_KEY);
+    } catch { /* ignore */ }
+  }
 
   useEffect(() => {
     Promise.all([fetchSeatStatus(), fetchCurrentUser()])
       .then(([status, { user, discountEnabled: discountsAvailable, discountAllowance: allowance }]) => {
         setSeatStatus(status);
+        setCurrentUser(user);
         setIsBniMember(Boolean(user?.isBniMember));
         setDiscountEnabled(Boolean(discountsAvailable));
         setDiscountAllowance(allowance || NO_DISCOUNT_ALLOWANCE);
+        if (user) restoreSavedBookingState();
       })
       .catch((error) => showPopup("Unable to load seats", error.message, "danger"));
   }, []);
@@ -134,7 +166,8 @@ export default function BookingPage() {
     requestAnimationFrame(() => paymentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
 
     try {
-      const { discountEnabled: discountsAvailable, discountAllowance: allowance } = await fetchCurrentUser();
+      const { user, discountEnabled: discountsAvailable, discountAllowance: allowance } = await fetchCurrentUser();
+      setCurrentUser(user);
       setDiscountEnabled(Boolean(discountsAvailable));
       setDiscountAllowance(allowance || NO_DISCOUNT_ALLOWANCE);
     } catch {
@@ -197,6 +230,12 @@ export default function BookingPage() {
       return showPopup("Screenshot required", "Please upload the payment screenshot.", "danger");
     }
 
+    if (!currentUser) {
+      saveBookingState();
+      router.push("/login?next=/");
+      return;
+    }
+
     setLoading(true);
     try {
       const booking = await createBooking({
@@ -223,6 +262,7 @@ export default function BookingPage() {
       setDiscountEnabled(Boolean(booking.discountEnabled));
       setDiscountAllowance(booking.discountAllowance || NO_DISCOUNT_ALLOWANCE);
       setSelectedSeats([]);
+      sessionStorage.removeItem(SAVED_STATE_KEY);
       setPaymentVisible(false);
       setPaid(false);
       setPaymentMethod("upi");
@@ -286,12 +326,20 @@ export default function BookingPage() {
               </button>
             </div>
             <nav className={styles.headerActions} aria-label="Account actions">
-              <Link className={styles.headerActionLink} href="/dashboard" onClick={closeMenu}>
-                Dashboard
-              </Link>
-              <button className={styles.headerLogout} type="button" onClick={logout}>
-                Logout
-              </button>
+              {currentUser ? (
+                <>
+                  <Link className={styles.headerActionLink} href="/dashboard" onClick={closeMenu}>
+                    Dashboard
+                  </Link>
+                  <button className={styles.headerLogout} type="button" onClick={logout}>
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <Link className={styles.headerActionLink} href="/login" onClick={closeMenu}>
+                  Login
+                </Link>
+              )}
             </nav>
           </aside>
         </>

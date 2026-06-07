@@ -1,7 +1,7 @@
 import { connectDb, isDatabaseConnectionError } from "@/server/db";
 import { errorResponse, json } from "@/server/http";
 import { getSeatStatusMap } from "@/server/services/bookingService";
-import { getPreBookedSeatIds } from "@/shared/seatMap";
+import { getPreBookedSeatIds, PDF_LAYOUT } from "@/shared/seatMap";
 
 export const runtime = "nodejs";
 
@@ -11,11 +11,17 @@ export async function GET() {
     return json(await getSeatStatusMap());
   } catch (error) {
     if (isDatabaseConnectionError(error)) {
-      const preBookedStatus = getPreBookedSeatIds().reduce((statusMap, seatId) => {
-        statusMap[seatId] = "booked";
-        return statusMap;
+      const statusMap = getPreBookedSeatIds().reduce((map, seatId) => {
+        map[seatId] = "booked";
+        return map;
       }, {});
-      return json(preBookedStatus);
+
+      const pdfSeats = PDF_LAYOUT.seats.slice(0, 5);
+      pdfSeats.forEach((seat) => {
+        statusMap[seat.id] = "pending";
+      });
+
+      return json(statusMap);
     }
 
     return errorResponse(error);
