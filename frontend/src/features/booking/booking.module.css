@@ -1079,7 +1079,7 @@
   position: relative;
   overflow: hidden;
   color: var(--cream);
-  padding: 56px 22px 100px;
+  padding: 20px 22px 100px;
   margin-bottom: -64px;
   background:
     linear-gradient(90deg, rgba(16, 32, 51, 0.88) 0%, rgba(107, 15, 26, 0.74) 52%, rgba(107, 15, 26, 0.45) 100%),
@@ -2245,7 +2245,7 @@
   }
 
   .hero {
-    padding: 34px 16px 84px;
+    padding: 12px 16px 84px;
   }
 
   .artistVideoButton {
@@ -2253,7 +2253,121 @@
     padding: 11px 16px;
     font-size: 0.95rem;
   }
+}
 
+.sponsors {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.sponsorBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.sponsorLabel {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--gold-2);
+  opacity: 0.9;
+}
+
+.sponsorSubLabel {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gold-2);
+  opacity: 0.75;
+}
+
+.sponsorLogo {
+  width: 200px;
+  height: auto;
+  object-fit: contain;
+}
+
+.sponsorRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+
+.sponsorItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.sponsorThumb {
+  width: 100px;
+  height: auto;
+  object-fit: contain;
+}
+
+.associateRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .sponsors {
+    gap: 6px;
+  }
+
+  .sponsorRow {
+    gap: 8px;
+  }
+
+  .associateRow {
+    gap: 6px;
+  }
+
+  .sponsorLabel {
+    font-size: 0.75rem;
+  }
+
+  .sponsorSubLabel {
+    font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .sponsorRow {
+    gap: 8px;
+  }
+
+  .sponsorLogo {
+    width: 130px;
+  }
+
+  .sponsorThumb {
+    width: 70px;
+  }
+
+  .associateRow {
+    gap: 6px;
+  }
+
+  .sponsorLabel {
+    font-size: 0.65rem;
+  }
+
+  .sponsorSubLabel {
+    font-size: 0.55rem;
+  }
+}
+
+@media (max-width: 560px) {
   .videoModalLayer {
     padding: 12px;
   }

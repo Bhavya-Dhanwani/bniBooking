@@ -7,6 +7,17 @@ import { createBooking, fetchCurrentUser, fetchSeatStatus, logoutUser } from "@/
 import { PDF_LAYOUT, REMOVED_SEAT_IDS, getSeatCategory, getPreBookedSeatIds, sofaRows } from "@/shared/seatMap";
 import { calculateTotals, formatMoney, hasDiscountForCategory, NO_DISCOUNT_ALLOWANCE } from "@/shared/money";
 import AppPopup from "@/shared/AppPopup";
+import srkLogo from "@/assets/srk.png";
+import khavdaLogo from "@/assets/khavda.png";
+import adityaKLogo from "@/assets/adityak.png";
+import padmavatiLogo from "@/assets/padmavati.png";
+import sadhanaLogo from "@/assets/sadhana.png";
+import krivoxxLogo from "@/assets/krivoxx.png";
+import imperialLogo from "@/assets/imperial.png";
+import itsqLogo from "@/assets/itsq.png";
+import mhLogo from "@/assets/MH.png";
+import touristLogo from "@/assets/tourist.png";
+import carzapaLogo from "@/assets/carzspa.png";
 import styles from "./booking.module.css";
 
 function Seat({ id, label, cat, price, extraPrice, discountAllowance, status, selected, onToggle, pdfStyle }) {
@@ -347,6 +358,47 @@ export default function BookingPage() {
 
       <section className={styles.hero}>
         <div className={styles.heroInner}>
+          <section className={styles.sponsors}>
+            <div className={styles.sponsorBlock}>
+              <span className={styles.sponsorLabel}>Powered by</span>
+              <img className={styles.sponsorLogo} src={srkLogo.src} alt="Powered by" />
+            </div>
+
+            <div className={styles.sponsorRow}>
+              <div className={styles.sponsorItem}>
+                <span className={styles.sponsorSubLabel}>Co-Sponser</span>
+                <img className={styles.sponsorThumb} src={khavdaLogo.src} alt="Co-Sponser" />
+              </div>
+              <div className={styles.sponsorItem}>
+                <span className={styles.sponsorSubLabel}>Social Media & Marketing</span>
+                <img className={styles.sponsorThumb} src={adityaKLogo.src} alt="Social Media & Marketing" />
+              </div>
+              <div className={styles.sponsorItem}>
+                <span className={styles.sponsorSubLabel}>Decor Partner</span>
+                <img className={styles.sponsorThumb} src={padmavatiLogo.src} alt="Decor Partner" />
+              </div>
+              <div className={styles.sponsorItem}>
+                <span className={styles.sponsorSubLabel}>Photography Partner</span>
+                <img className={styles.sponsorThumb} src={sadhanaLogo.src} alt="Photography Partner" />
+              </div>
+              <div className={styles.sponsorItem}>
+                <span className={styles.sponsorSubLabel}>Booking Partner</span>
+                <img className={styles.sponsorThumb} src={krivoxxLogo.src} alt="Booking Partner" />
+              </div>
+            </div>
+
+            <div className={styles.sponsorBlock}>
+              <span className={styles.sponsorLabel}>Associate Sponsors</span>
+              <div className={styles.associateRow}>
+                <img className={styles.sponsorThumb} src={imperialLogo.src} alt="Associate Sponsor" />
+                <img className={styles.sponsorThumb} src={itsqLogo.src} alt="Associate Sponsor" />
+                <img className={styles.sponsorThumb} src={mhLogo.src} alt="Associate Sponsor" />
+                <img className={styles.sponsorThumb} src={touristLogo.src} alt="Associate Sponsor" />
+                <img className={styles.sponsorThumb} src={carzapaLogo.src} alt="Associate Sponsor" />
+              </div>
+            </div>
+          </section>
+
           <span className={styles.eyebrow}>An Evening of Poetry & Stories</span>
           <OrnateDivider />
           <h1 className={styles.heroTitle}>
