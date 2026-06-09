@@ -358,7 +358,7 @@ export default function BookingPage() {
 
       <section className={styles.hero}>
         <div className={styles.heroInner}>
-          <section className={styles.sponsors}>
+          {/* <section className={styles.sponsors}>
             <div className={styles.sponsorBlock}>
               <span className={styles.sponsorLabel}>Powered by</span>
               <img className={styles.sponsorLogo} src={srkLogo.src} alt="Powered by" />
@@ -397,7 +397,7 @@ export default function BookingPage() {
                 <img className={styles.sponsorThumb} src={carzapaLogo.src} alt="Associate Sponsor" />
               </div>
             </div>
-          </section>
+          </section> */}
 
           <span className={styles.eyebrow}>An Evening of Poetry & Stories</span>
           <OrnateDivider />
