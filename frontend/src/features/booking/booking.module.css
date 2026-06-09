@@ -1110,7 +1110,7 @@
 }
 
 .heroInner {
-  max-width: 980px;
+  max-width: 1200px;
   margin: 0 auto;
   text-align: center;
   position: relative;
@@ -2271,7 +2271,8 @@
 }
 
 .sponsorLabel {
-  font-size: 0.85rem;
+  font-size: 1.2rem;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--gold-2);
@@ -2279,7 +2280,8 @@
 }
 
 .sponsorSubLabel {
-  font-size: 0.7rem;
+  font-size: 1rem;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--gold-2);
@@ -2287,7 +2289,7 @@
 }
 
 .sponsorLogo {
-  width: 200px;
+  width: 550px;
   height: auto;
   object-fit: contain;
 }
@@ -2296,18 +2298,18 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 14px;
+  gap: 30px;
 }
 
 .sponsorItem {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .sponsorThumb {
-  width: 100px;
+  width: 140px;
   height: auto;
   object-fit: contain;
 }
@@ -2316,7 +2318,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
+  gap: 18px;
 }
 
 @media (max-width: 768px) {
@@ -2325,45 +2327,45 @@
   }
 
   .sponsorRow {
-    gap: 8px;
+    gap: 12px;
   }
 
   .associateRow {
-    gap: 6px;
+    gap: 10px;
   }
 
   .sponsorLabel {
-    font-size: 0.75rem;
+    font-size: 1rem;
   }
 
   .sponsorSubLabel {
-    font-size: 0.6rem;
+    font-size: 0.85rem;
   }
 }
 
 @media (max-width: 560px) {
   .sponsorRow {
-    gap: 8px;
+    gap: 10px;
   }
 
   .sponsorLogo {
-    width: 130px;
+    width: 350px;
   }
 
   .sponsorThumb {
-    width: 70px;
+    width: 100px;
   }
 
   .associateRow {
-    gap: 6px;
+    gap: 10px;
   }
 
   .sponsorLabel {
-    font-size: 0.65rem;
+    font-size: 0.85rem;
   }
 
   .sponsorSubLabel {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
   }
 }
 
