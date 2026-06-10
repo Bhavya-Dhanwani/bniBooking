@@ -358,46 +358,16 @@ export default function BookingPage() {
 
       <section className={styles.hero}>
         <div className={styles.heroInner}>
-          {/* <section className={styles.sponsors}>
-            <div className={styles.sponsorBlock}>
+          <div className={styles.sponsorHero}>
+            <div className={styles.sponsorHeroItem}>
               <span className={styles.sponsorLabel}>Powered by</span>
-              <img className={styles.sponsorLogo} src={srkLogo.src} alt="Powered by" />
+              <img className={styles.sponsorHeroMain} src={srkLogo.src} alt="Powered by" />
             </div>
-
-            <div className={styles.sponsorRow}>
-              <div className={styles.sponsorItem}>
-                <span className={styles.sponsorSubLabel}>Co-Sponser</span>
-                <img className={styles.sponsorThumb} src={khavdaLogo.src} alt="Co-Sponser" />
-              </div>
-              <div className={styles.sponsorItem}>
-                <span className={styles.sponsorSubLabel}>Social Media & Marketing</span>
-                <img className={styles.sponsorThumb} src={adityaKLogo.src} alt="Social Media & Marketing" />
-              </div>
-              <div className={styles.sponsorItem}>
-                <span className={styles.sponsorSubLabel}>Decor Partner</span>
-                <img className={styles.sponsorThumb} src={padmavatiLogo.src} alt="Decor Partner" />
-              </div>
-              <div className={styles.sponsorItem}>
-                <span className={styles.sponsorSubLabel}>Photography Partner</span>
-                <img className={styles.sponsorThumb} src={sadhanaLogo.src} alt="Photography Partner" />
-              </div>
-              <div className={styles.sponsorItem}>
-                <span className={styles.sponsorSubLabel}>Booking Partner</span>
-                <img className={styles.sponsorThumb} src={krivoxxLogo.src} alt="Booking Partner" />
-              </div>
+            <div className={styles.sponsorHeroItem}>
+              <span className={styles.sponsorLabel}>Co-Sponser</span>
+              <img className={styles.sponsorHeroSide} src={khavdaLogo.src} alt="Co-Sponser" />
             </div>
-
-            <div className={styles.sponsorBlock}>
-              <span className={styles.sponsorLabel}>Associate Sponsors</span>
-              <div className={styles.associateRow}>
-                <img className={styles.sponsorThumb} src={imperialLogo.src} alt="Associate Sponsor" />
-                <img className={styles.sponsorThumb} src={itsqLogo.src} alt="Associate Sponsor" />
-                <img className={styles.sponsorThumb} src={mhLogo.src} alt="Associate Sponsor" />
-                <img className={styles.sponsorThumb} src={touristLogo.src} alt="Associate Sponsor" />
-                <img className={styles.sponsorThumb} src={carzapaLogo.src} alt="Associate Sponsor" />
-              </div>
-            </div>
-          </section> */}
+          </div>
 
           <span className={styles.eyebrow}>An Evening of Poetry & Stories</span>
           <OrnateDivider />
@@ -769,6 +739,11 @@ export default function BookingPage() {
           <br />
           © BNI Kutch Chapter · Presented with love
         </p>
+
+        <div className={styles.footerSponsor}>
+          <span className={styles.footerSponsorLabel}>Booking Partner</span>
+          <img className={styles.footerSponsorLogo} src={krivoxxLogo.src} alt="Booking Partner" />
+        </div>
       </div>
 
       <div className={`${styles.bookingPanel} ${paymentVisible ? styles.bookingPanelHidden : ""}`}>

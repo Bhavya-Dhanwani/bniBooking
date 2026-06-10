@@ -2169,7 +2169,7 @@
   font-style: italic;
   color: #6b4c3a;
   text-align: center;
-  margin: 24px auto 130px;
+  margin: 24px auto 20px;
   line-height: 1.5;
 }
 
@@ -2178,6 +2178,29 @@
   font-style: normal;
   font-weight: 700;
   padding: 0 10px;
+}
+
+.footerSponsor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 32px auto 0;
+  padding-bottom: 40px;
+}
+
+.footerSponsorLabel {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--gold-3);
+}
+
+.footerSponsorLogo {
+  width: 100px;
+  height: auto;
+  object-fit: contain;
 }
 
 .uploadForm input {
@@ -2255,19 +2278,21 @@
   }
 }
 
-.sponsors {
-  margin-bottom: 12px;
+.sponsorHero {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 60px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.sponsorHeroItem {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-}
-
-.sponsorBlock {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
 }
 
 .sponsorLabel {
@@ -2277,95 +2302,56 @@
   letter-spacing: 2px;
   color: var(--gold-2);
   opacity: 0.9;
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
 }
 
-.sponsorSubLabel {
-  font-size: 1rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--gold-2);
-  opacity: 0.75;
-}
-
-.sponsorLogo {
+.sponsorHeroMain {
   width: 550px;
   height: auto;
   object-fit: contain;
 }
 
-.sponsorRow {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 30px;
-}
-
-.sponsorItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.sponsorThumb {
-  width: 140px;
+.sponsorHeroSide {
+  width: 180px;
   height: auto;
   object-fit: contain;
 }
 
-.associateRow {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 18px;
-}
-
 @media (max-width: 768px) {
-  .sponsors {
-    gap: 6px;
-  }
-
-  .sponsorRow {
-    gap: 12px;
-  }
-
-  .associateRow {
-    gap: 10px;
+  .sponsorHero {
+    gap: 30px;
   }
 
   .sponsorLabel {
     font-size: 1rem;
   }
 
-  .sponsorSubLabel {
-    font-size: 0.85rem;
+  .sponsorHeroMain {
+    width: 350px;
+  }
+
+  .sponsorHeroSide {
+    width: 150px;
   }
 }
 
 @media (max-width: 560px) {
-  .sponsorRow {
-    gap: 10px;
+  .sponsorHero {
+    gap: 20px;
   }
 
-  .sponsorLogo {
-    width: 350px;
+  .sponsorHeroMain {
+    width: 250px;
   }
 
-  .sponsorThumb {
-    width: 100px;
-  }
-
-  .associateRow {
-    gap: 10px;
+  .sponsorHeroSide {
+    width: 120px;
   }
 
   .sponsorLabel {
     font-size: 0.85rem;
-  }
-
-  .sponsorSubLabel {
-    font-size: 0.75rem;
   }
 }
 
