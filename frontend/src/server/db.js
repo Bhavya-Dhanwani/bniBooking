@@ -1,4 +1,7 @@
 import mongoose from "mongoose";
+import dns from "dns";
+
+dns.setDefaultResultOrder("ipv4first");
 
 let connectionPromise = null;
 
@@ -15,9 +18,15 @@ export async function connectDb() {
     connectionPromise = mongoose
       .connect(uri, {
         serverSelectionTimeoutMS: 10000,
+        family: 4,
+      })
+      .then((conn) => {
+        console.log(`[DB] MongoDB connected to ${conn.connection.host}/${conn.connection.name}`);
+        return conn;
       })
       .catch((error) => {
         connectionPromise = null;
+        console.error("[DB] MongoDB connection failed:", error.message);
         throw error;
       });
   }

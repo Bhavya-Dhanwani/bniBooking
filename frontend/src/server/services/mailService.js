@@ -626,20 +626,29 @@ async function sendBookingEmail(booking, statusLabel, subject, message, options 
 
 export async function sendPendingBookingEmail(booking) {
   const isCash = booking.paymentMethod === "cash";
+  const bookingId = getBookingId(booking);
+
+  console.log(`[MAIL] Sending pending booking email to ${booking.email} (${bookingId})`);
 
   await sendBookingEmail(
     booking,
     isCash ? "Cash Payment Pending" : "Pending Verification",
-    `BNI booking received - ${getBookingId(booking)}`,
+    `BNI booking received - ${bookingId}`,
     isCash
       ? "Excited to welcome you! To confirm your booking, please complete the cash payment within 24 hours."
       : "Your booking has been received and is currently pending payment verification.",
   );
+
+  console.log(`[MAIL] Pending booking email sent to ${booking.email} (${bookingId})`);
 }
 
 export async function sendConfirmedBookingEmail(booking, baseUrl) {
   const normalizedBooking = normalizeBooking(booking);
+  const bookingId = getBookingId(normalizedBooking);
   const checkInUrl = getCheckInUrl(normalizedBooking, baseUrl);
+
+  console.log(`[MAIL] Sending confirmed booking email to ${booking.email} (${bookingId})`);
+
   const qrImageDataUrl = await QRCode.toDataURL(checkInUrl, {
     errorCorrectionLevel: "M",
     margin: 1,
@@ -650,33 +659,42 @@ export async function sendConfirmedBookingEmail(booking, baseUrl) {
   await sendBookingEmail(
     booking,
     "Confirmed",
-    `BNI booking confirmed - ${getBookingId(normalizedBooking)}`,
+    `BNI booking confirmed - ${bookingId}`,
     "Your payment has been verified by the admin. Your booking is now confirmed. Your confirmed ticket PDF is attached.",
     {
       attachments: [
         {
-          filename: `${getBookingId(normalizedBooking)}-ticket.pdf`,
+          filename: `${bookingId}-ticket.pdf`,
           content: pdfBuffer,
           contentType: "application/pdf",
         },
       ],
     },
   );
+
+  console.log(`[MAIL] Confirmed booking email sent to ${booking.email} (${bookingId})`);
 }
 
 export async function sendRejectedBookingEmail(booking) {
+  const bookingId = getBookingId(booking);
+
+  console.log(`[MAIL] Sending rejected booking email to ${booking.email} (${bookingId})`);
+
   await sendBookingEmail(
     booking,
     "Rejected",
-    `BNI booking rejected - ${getBookingId(booking)}`,
+    `BNI booking rejected - ${bookingId}`,
     "Your payment verification was rejected by the admin. Please contact the event team if you believe this is a mistake.",
   );
+
+  console.log(`[MAIL] Rejected booking email sent to ${booking.email} (${bookingId})`);
 }
 
 export async function sendMailSafely(taskName, sendMail) {
   try {
     await sendMail();
+    console.log(`[MAIL] ${taskName} completed`);
   } catch (error) {
-    console.error(`${taskName} failed:`, error.message);
+    console.error(`[MAIL] ${taskName} failed:`, error.message);
   }
 }
