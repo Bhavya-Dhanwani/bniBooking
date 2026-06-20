@@ -613,9 +613,12 @@ async function createPdfBuffer(sourceBooking, qrImageDataUrl, checkInUrl) {
 
 async function sendBookingEmail(booking, statusLabel, subject, message, options = {}) {
   const attachments = options.attachments || [];
+  const from = `BNI <${(process.env.MAIL_FROM || process.env.SMTP_USER || "").trim()}>`;
+
+  console.log(`[MAIL] Sending from: ${from} to: ${booking.email}`);
 
   await getTransporter().sendMail({
-    from: (process.env.MAIL_FROM || process.env.SMTP_USER || "").trim(),
+    from,
     to: booking.email,
     subject,
     text: bookingDetailsText(booking, statusLabel, message),
