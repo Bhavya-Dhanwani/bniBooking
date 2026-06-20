@@ -387,6 +387,15 @@
   background: #e53935;
 }
 
+.btnResend {
+  background: #1976d2;
+  color: white;
+}
+
+.btnResend:hover {
+  background: #1565c0;
+}
+
 .btnRejectedDisabled,
 .btnRejectedDisabled:hover {
   cursor: not-allowed;

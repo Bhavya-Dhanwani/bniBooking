@@ -9,6 +9,7 @@ import {
   fetchAdminStats,
   fetchDiscountSetting,
   fetchSiteSetting,
+  resendBookingEmail,
   resetBookings,
   updateBookingStatus,
   updateDiscountSetting,
@@ -89,6 +90,11 @@ export default function AdminDashboard() {
     const adminToken = getAdminToken();
     await updateBookingStatus(id, status, adminToken);
     await loadData(adminToken);
+  }
+
+  async function resendEmail(id, type) {
+    const adminToken = getAdminToken();
+    await resendBookingEmail(id, type, adminToken);
   }
 
   async function clearAllData() {
@@ -423,7 +429,7 @@ export default function AdminDashboard() {
                     </td>
                     <td>{new Date(booking.date).toLocaleDateString("en-IN")}</td>
                     <td>
-                      <ActionButtons booking={booking} onChange={changeStatus} canVerify={canManage} />
+                      <ActionButtons booking={booking} onChange={changeStatus} onResend={resendEmail} canVerify={canManage} />
                     </td>
                   </tr>
                 ))}
@@ -486,7 +492,7 @@ export default function AdminDashboard() {
                   </dl>
 
                   <div className={styles.mobileActions}>
-                    <ActionButtons booking={booking} onChange={changeStatus} canVerify={canManage} />
+                    <ActionButtons booking={booking} onChange={changeStatus} onResend={resendEmail} canVerify={canManage} />
                   </div>
                 </article>
               ))}
@@ -569,7 +575,7 @@ export default function AdminDashboard() {
   );
 }
 
-function ActionButtons({ booking, onChange, canVerify }) {
+function ActionButtons({ booking, onChange, onResend, canVerify }) {
   if (!canVerify) {
     return <span className={styles.viewerBadge}>Data access</span>;
   }
@@ -577,6 +583,9 @@ function ActionButtons({ booking, onChange, canVerify }) {
   if (booking.status === "pending") {
     return (
       <>
+        <button className={`${styles.btn} ${styles.btnResend} ${styles.btnSm}`} onClick={() => onResend(booking.id, "booking")}>
+          Resend Booking
+        </button>{" "}
         <button className={`${styles.btn} ${styles.btnConfirm} ${styles.btnSm}`} onClick={() => onChange(booking.id, "confirmed")}>
           Verify
         </button>{" "}
@@ -589,9 +598,17 @@ function ActionButtons({ booking, onChange, canVerify }) {
 
   if (booking.status === "confirmed") {
     return (
-      <button className={`${styles.btn} ${styles.btnReject} ${styles.btnSm}`} onClick={() => onChange(booking.id, "rejected")}>
-        Reject & Release
-      </button>
+      <>
+        <button className={`${styles.btn} ${styles.btnResend} ${styles.btnSm}`} onClick={() => onResend(booking.id, "booking")}>
+          Resend Booking
+        </button>{" "}
+        <button className={`${styles.btn} ${styles.btnResend} ${styles.btnSm}`} onClick={() => onResend(booking.id, "confirmation")}>
+          Resend Confirmation
+        </button>{" "}
+        <button className={`${styles.btn} ${styles.btnReject} ${styles.btnSm}`} onClick={() => onChange(booking.id, "rejected")}>
+          Reject & Release
+        </button>
+      </>
     );
   }
 

@@ -104,6 +104,14 @@ export function updateBookingStatus(id, status, token) {
   });
 }
 
+export function resendBookingEmail(id, type, token) {
+  return request(`/admin/bookings/${id}/resend`, {
+    method: "POST",
+    headers: { "x-admin-token": token },
+    body: JSON.stringify({ type }),
+  });
+}
+
 export function resetBookings(token) {
   return request("/admin/bookings", {
     method: "DELETE",
