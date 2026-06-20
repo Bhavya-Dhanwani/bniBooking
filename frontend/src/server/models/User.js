@@ -17,7 +17,11 @@ const userSchema = new mongoose.Schema(
     },
     passwordHash: {
       type: String,
-      required: true,
+      default: "",
+    },
+    googleId: {
+      type: String,
+      default: null,
     },
     isBniMember: {
       type: Boolean,
@@ -34,6 +38,7 @@ const userSchema = new mongoose.Schema(
         delete ret._id;
         delete ret.__v;
         delete ret.passwordHash;
+        delete ret.googleId;
         return ret;
       },
     },

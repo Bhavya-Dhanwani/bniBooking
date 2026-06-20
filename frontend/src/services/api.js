@@ -135,6 +135,13 @@ export function fetchCurrentUser() {
   return request("/auth/me");
 }
 
+export function googleAuth(idToken) {
+  return request("/auth/google", {
+    method: "POST",
+    body: JSON.stringify({ idToken }),
+  });
+}
+
 export function fetchUserBookings() {
   return request("/user/bookings");
 }

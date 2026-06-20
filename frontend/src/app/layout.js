@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { absoluteUrl, siteDescription, siteName, siteUrl } from "@/shared/siteConfig";
+import AuthProvider from "@/shared/AuthContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -62,7 +63,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body>{children}</body>
+      <body>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }
