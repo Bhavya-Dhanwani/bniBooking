@@ -161,6 +161,16 @@ export default function BookingPage() {
   }
 
   function toggleSeat(seat) {
+    if (!currentUser) {
+      setPopup({
+        title: "Login required",
+        message: "Please login to select seats and proceed with booking.",
+        type: "info",
+        loginRedirect: true,
+      });
+      return;
+    }
+
     if (seatStatus[seat.id] && seatStatus[seat.id] !== "available") return;
 
     const exists = selectedSeats.some((selected) => selected.id === seat.id);
@@ -237,7 +247,7 @@ export default function BookingPage() {
       return showPopup("Invalid phone", "Please enter a valid phone number.", "danger");
     }
 
-    if (paymentMethod !== "cash" && !screenshot) {
+    if (!screenshot) {
       return showPopup("Screenshot required", "Please upload the payment screenshot.", "danger");
     }
 
@@ -261,12 +271,7 @@ export default function BookingPage() {
         ...current,
         ...selectedSeats.reduce((map, seat) => ({ ...map, [seat.id]: "pending" }), {}),
       }));
-      const confirmationMessage =
-        paymentMethod === "cash"
-          ? `Booking submitted!\nBooking ID: ${booking.id}\nAmount Due: ${formatMoney(
-              booking.total,
-            )} (incl. 18% GST)\n\nExcited to welcome you!\nTo confirm your booking, please complete the cash payment within 24 hours.\n\nBNI KUTCH\nDBZ SOUTH -188/A FIRST FLOOR, OPP. SHIVAJI PARK,\nGANDHIDHAM (KUTCH) GUJARAT 370201`
-          : `Booking submitted!\nBooking ID: ${booking.id}\nTotal Paid: ${formatMoney(
+      const confirmationMessage = `Booking submitted!\nBooking ID: ${booking.id}\nTotal Paid: ${formatMoney(
               booking.total,
             )} (incl. 18% GST)\n\nAdmin will verify your payment shortly.`;
       showPopup("Booking submitted", confirmationMessage, "success");
@@ -610,9 +615,7 @@ export default function BookingPage() {
             </div>
             <h2>Payment &amp; Confirmation</h2>
             <p className={styles.paymentIntro}>
-              {paymentMethod === "cash"
-                ? "Review your selection and complete your cash booking. 18% GST is included in the total."
-                : "Review your selection, complete payment, and upload the screenshot for admin verification. 18% GST is included in the total."}
+              {"Review your selection, complete payment, and upload the screenshot for admin verification. 18% GST is included in the total."}
             </p>
             <OrderSummary selectedSeats={selectedSeats} totals={totals} />
 
@@ -626,7 +629,6 @@ export default function BookingPage() {
               >
                 <option value="upi">UPI - Scan QR / pay to munjalshah9@okicici</option>
                 <option value="imps">IMPS / NEFT - Bank Transfer</option>
-                <option value="cash">Cash - Pay at the BNI Kutch Regional Office</option>
               </select>
             </div>
 
@@ -660,45 +662,16 @@ export default function BookingPage() {
                 </div>
               )}
 
-              {paymentMethod === "cash" && (
-                <div className={styles.pmPanel}>
-                  <h3 className={styles.pmTitle}>Pay in Cash at the BNI Kutch Regional Office</h3>
-                  <p className={styles.cashText}>
-                    Complete your booking now and pay in cash at the BNI Kutch Regional Office.
-                  </p>
-                  <p className={styles.cashWarning}>
-                    Excited to welcome you! To confirm your booking, please complete the cash payment within 24 hours.
-                  </p>
-                  <address className={styles.cashAddress}>
-                    <strong>BNI KUTCH</strong>
-                    <span>DBZ SOUTH -188/A FIRST FLOOR, OPP. SHIVAJI PARK,</span>
-                    <span>GANDHIDHAM (KUTCH) GUJARAT 370201</span>
-                  </address>
-                  <div className={styles.cashMap}>
-                    <iframe
-                      title="IFFCO Community Center map location"
-                      src="https://www.google.com/maps?q=IFFCO%20Community%20Center%20Gandhidham&output=embed"
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                    />
-                    <a href="https://share.google/np1ghYkw0nbgJW49y" target="_blank" rel="noreferrer">
-                      Open in Google Maps
-                    </a>
-                  </div>
-                </div>
-              )}
             </div>
 
-            {paymentMethod !== "cash" && (
-              <div className={styles.paidConfirm}>
-                <label className={styles.checkRow}>
-                  <input type="checkbox" checked={paid} onChange={(event) => setPaid(event.target.checked)} />
-                  <span>I have completed the payment</span>
-                </label>
-              </div>
-            )}
+            <div className={styles.paidConfirm}>
+              <label className={styles.checkRow}>
+                <input type="checkbox" checked={paid} onChange={(event) => setPaid(event.target.checked)} />
+                <span>I have completed the payment</span>
+              </label>
+            </div>
 
-            {(paymentMethod === "cash" || paid) && (
+            {paid && (
               <div className={styles.uploadForm}>
                 <label>Phone Number</label>
                 <input
@@ -716,16 +689,12 @@ export default function BookingPage() {
                   placeholder="Enter GSTIN for invoice (optional)"
                   maxLength={15}
                 />
-                {paymentMethod !== "cash" && (
-                  <>
-                    <label>Payment Screenshot</label>
-                    <button type="button" className={styles.uploadWrap} onClick={() => fileRef.current?.click()}>
-                      <span className={screenshot ? styles.fileSelected : ""}>{fileLabel}</span>
-                      <small>PNG, JPG or JPEG (max 2MB)</small>
-                    </button>
-                    <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/jpg" hidden onChange={handleFileChange} />
-                  </>
-                )}
+                <label>Payment Screenshot</label>
+                <button type="button" className={styles.uploadWrap} onClick={() => fileRef.current?.click()}>
+                  <span className={screenshot ? styles.fileSelected : ""}>{fileLabel}</span>
+                  <small>PNG, JPG or JPEG (max 2MB)</small>
+                </button>
+                <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/jpg" hidden onChange={handleFileChange} />
                 <button className={`${styles.btn} ${styles.btnPrimary} ${styles.fullButton}`} onClick={submitBooking} disabled={loading}>
                   {loading ? "Submitting..." : "Complete Booking"}
                 </button>
@@ -794,7 +763,13 @@ export default function BookingPage() {
         title={popup?.title}
         message={popup?.message}
         type={popup?.type}
-        onConfirm={() => setPopup(null)}
+        confirmLabel={popup?.loginRedirect ? "Login" : "OK"}
+        onConfirm={() => {
+          if (popup?.loginRedirect) {
+            window.location.href = "/login";
+          }
+          setPopup(null);
+        }}
       />
     </main>
   );
