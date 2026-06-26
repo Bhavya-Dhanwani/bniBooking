@@ -59,6 +59,13 @@ export const PRE_BOOKED_CHAIR_IDS = new Set([
   "G-F-25",
   "B-F1-7",
   "B-F1-8",
+  "B-F1-13",
+  "B-F1-23",
+  "B-F1-24",
+  "B-F1-25",
+  "B-F1-26",
+  "B-F1-27",
+  "B-F1-28",
 ]);
 
 export function getPreBookedSeatIds() {
