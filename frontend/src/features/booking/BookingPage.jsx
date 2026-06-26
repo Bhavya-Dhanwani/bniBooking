@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createBooking, fetchCurrentUser, fetchSeatStatus, logoutUser } from "@/services/api";
-import { PDF_LAYOUT, REMOVED_SEAT_IDS, getSeatCategory, getPreBookedSeatIds, sofaRows } from "@/shared/seatMap";
+import { PDF_LAYOUT, REMOVED_SEAT_IDS, PRE_BOOKED_CHAIR_IDS, getSeatCategory, getPreBookedSeatIds, sofaRows } from "@/shared/seatMap";
 import { calculateTotals, formatMoney, hasDiscountForCategory, NO_DISCOUNT_ALLOWANCE } from "@/shared/money";
 import AppPopup from "@/shared/AppPopup";
 import srkLogo from "@/assets/srk.png";
@@ -585,7 +585,7 @@ export default function BookingPage() {
                     price={seat.price}
                     extraPrice={seat.extraPrice}
                     discountAllowance={discountAllowance}
-                    status={seatStatus[seat.id] || "available"}
+                    status={PRE_BOOKED_CHAIR_IDS.has(seat.id) ? "booked" : seatStatus[seat.id] || "available"}
                     selected={selectedIds.has(seat.id)}
                     onToggle={toggleSeat}
                     pdfStyle={{

@@ -46,10 +46,6 @@ export const REMOVED_SEAT_IDS = new Set([
   "G-J-34",
   "G-J-35",
   "G-J-36",
-  "G-F-24",
-  "G-F-25",
-  "B-F1-7",
-  "B-F1-8",
   "S6-L-6",
   "S6-L-7",
   "S6-R-6",
@@ -57,6 +53,13 @@ export const REMOVED_SEAT_IDS = new Set([
 ]);
 
 export const PRE_BOOKED_SOFA_ROWS = ["S1", "S5"];
+
+export const PRE_BOOKED_CHAIR_IDS = new Set([
+  "G-F-24",
+  "G-F-25",
+  "B-F1-7",
+  "B-F1-8",
+]);
 
 export function getPreBookedSeatIds() {
   const seats = [];
